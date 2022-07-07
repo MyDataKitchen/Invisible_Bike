@@ -2,8 +2,8 @@ import os
 os.environ["MODIN_ENGINE"] = "ray"  # Modin will use Ray
 import ray
 ray.init(ignore_reinit_error=True,object_store_memory=2000 * 1024 * 1024)
-from model.s3 import get_parquet_from_s3
-from model.mysql import get_all_stations
+from models.s3 import get_parquet_from_s3
+from models.mysql import get_all_stations
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from datetime import datetime as dt
