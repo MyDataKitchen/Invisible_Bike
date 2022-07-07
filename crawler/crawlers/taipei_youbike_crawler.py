@@ -1,9 +1,9 @@
-from crawler.model.s3 import put_data_to_s3
+from crawler.models.s3 import put_data_to_s3
 from datetime import datetime as dt
 from datetime import timezone, timedelta
 from dotenv import load_dotenv
-from crawler.model.mysql import get_latest_log, insert_crawler_log
-from crawler.model.mongodb import insert_youbike_data_to_mongo
+from crawler.models.mysql import get_latest_log, insert_crawler_log
+from crawler.models.mongodb import insert_youbike_data_to_mongo
 import requests
 import json
 import os
