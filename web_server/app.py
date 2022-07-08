@@ -58,7 +58,7 @@ def select_city(city):
 #### Get Parquet From S3 ####
 
 # @st.cache(show_spinner=False, max_entries=5, ttl=60)
-@st.experimental_memo(show_spinner=False)
+@st.experimental_memo(show_spinner=False) #add cache without showing loading
 def load_parquet(city, date):
     df = get_parquet_from_s3("invisible-bike", f"parquet/{ city }/{ date }_{ city }.parquet")
     df['datetime'] = pd.to_datetime(df['datetime'])
