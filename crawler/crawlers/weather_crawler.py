@@ -12,11 +12,11 @@ import sys
 
 load_dotenv()
 
-WHEATHER_URL = os.getenv('WHEATHER_URL')
+WEATHER_URL = os.getenv('WEATHER_URL')
 S3_BUCKET = os.getenv('BUCKET')
-SQL_TABLE = os.getenv('WHEATHER_TABLE')
-S3_DIRECTORY_PATH = os.getenv('WHEATHER_DIRECTORY_PATH')
-FILE_NAME = os.getenv('WHEATHER_FILE_NAME')
+SQL_TABLE = os.getenv('WEATHER_TABLE')
+S3_DIRECTORY_PATH = os.getenv('WEATHER_DIRECTORY_PATH')
+FILE_NAME = os.getenv('WEATHER_FILE_NAME')
 
 def request_data(url):
     respone = requests.get(url)
@@ -46,7 +46,7 @@ def insert_data_to_mongo(source, data):
 if __name__ == '__main__':
     date_time = datetime()
     start = time.time()
-    data, updated_time, size = request_data(WHEATHER_URL)
+    data, updated_time, size = request_data(WEATHER_URL)
     end = time.time()
     response_time = end - start
 
@@ -59,7 +59,12 @@ if __name__ == '__main__':
     if datetime_request > datetime_log:
         filename = f"{ date_time }_{ FILE_NAME }.json"
         mongo_data = {"created_at": updated_time, "item": data, "filename": filename}
-        insert_data_to_mongo("weather", mongo_data)
+        status = insert_data_to_mongo("weather", mongo_data)
+        if status == True:
+            aws_response = insert_data_to_s3(S3_BUCKET, S3_DIRECTORY_PATH + filename, data)
+        else:
+            S3_DIRECTORY_PATH = "temp/weather/"
+            aws_response = insert_data_to_s3(S3_BUCKET, S3_DIRECTORY_PATH + filename, data)
         aws_response = insert_data_to_s3(S3_BUCKET, S3_DIRECTORY_PATH + filename, data)
         end = time.time()
         execution_time = end - start

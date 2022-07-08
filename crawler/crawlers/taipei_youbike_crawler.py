@@ -59,8 +59,12 @@ if __name__ == '__main__':
     if datetime_request > datetime_log:
         filename = f"{ date_time }_{ FILE_NAME }.json"
         mongo_data = {"created_at": updated_time, "item": data, "filename": filename}
-        insert_data_to_mongo("taipei", mongo_data)
-        aws_response = insert_data_to_s3(S3_BUCKET, S3_DIRECTORY_PATH + filename, data)
+        status = insert_data_to_mongo("taipei", mongo_data)
+        if status == True:
+            aws_response = insert_data_to_s3(S3_BUCKET, S3_DIRECTORY_PATH + filename, data)
+        else:
+            S3_DIRECTORY_PATH = "temp/taipei/"
+            aws_response = insert_data_to_s3(S3_BUCKET, S3_DIRECTORY_PATH + filename, data)
         end = time.time()
         execution_time = end - start
         insert_crawler_log(SQL_TABLE, (filename, updated_time, len(data), size, response_time, execution_time, 1, json.dumps(aws_response)))

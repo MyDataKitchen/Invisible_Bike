@@ -65,8 +65,12 @@ if __name__ == '__main__':
         else:
             filename = f"{date_time}_{FILE_NAME}.json"
             mongo_data = {"created_at": updated_time, "item": data, "filename": filename}
-            insert_data_to_mongo("taichung", mongo_data)
-            aws_response = insert_data_to_s3(S3_BUCKET, S3_DIRECTORY_PATH + filename, data)
+            status = insert_data_to_mongo("taichung", mongo_data)
+            if status == True:
+                aws_response = insert_data_to_s3(S3_BUCKET, S3_DIRECTORY_PATH + filename, data)
+            else:
+                S3_DIRECTORY_PATH = "temp/taichung/"
+                aws_response = insert_data_to_s3(S3_BUCKET, S3_DIRECTORY_PATH + filename, data)
             end = time.time()
             execution_time = end - start
             insert_crawler_log(SQL_TABLE, (filename, updated_time, len(data['retVal']), size, response_time, execution_time, 1, json.dumps(aws_response)))
@@ -79,7 +83,13 @@ if __name__ == '__main__':
     except FileNotFoundError:
 
         filename = f"{date_time}_{FILE_NAME}.json"
-        aws_response = insert_data_to_s3(S3_BUCKET, S3_DIRECTORY_PATH + filename, data)
+        mongo_data = {"created_at": updated_time, "item": data, "filename": filename}
+        status = insert_data_to_mongo("taichung", mongo_data)
+        if status == True:
+            aws_response = insert_data_to_s3(S3_BUCKET, S3_DIRECTORY_PATH + filename, data)
+        else:
+            S3_DIRECTORY_PATH = "temp/taichung/"
+            aws_response = insert_data_to_s3(S3_BUCKET, S3_DIRECTORY_PATH + filename, data)
         end = time.time()
         execution_time = end - start
         insert_crawler_log(SQL_TABLE, (filename, updated_time, len(data['retVal']), size, response_time, execution_time, 1, json.dumps(aws_response)))
