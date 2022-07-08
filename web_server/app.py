@@ -2,8 +2,8 @@ import os
 os.environ["MODIN_ENGINE"] = "ray"  # Modin will use Ray
 import ray
 ray.init(ignore_reinit_error=True,object_store_memory=2000 * 1024 * 1024)
-from model.s3 import get_parquet_from_s3
-from model.mysql import get_all_stations
+from models.s3 import get_parquet_from_s3
+from models.mysql import get_all_stations
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from datetime import datetime as dt
@@ -58,7 +58,7 @@ def select_city(city):
 #### Get Parquet From S3 ####
 
 # @st.cache(show_spinner=False, max_entries=5, ttl=60)
-@st.experimental_memo
+@st.experimental_memo(show_spinner=False)
 def load_parquet(city, date):
     df = get_parquet_from_s3("invisible-bike", f"parquet/{ city }/{ date }_{ city }.parquet")
     df['datetime'] = pd.to_datetime(df['datetime'])
@@ -67,13 +67,13 @@ def load_parquet(city, date):
 df = load_parquet(select_city(city), date)
 
 # @st.cache(show_spinner=False, max_entries=3, ttl=60)
-@st.experimental_memo
+@st.experimental_memo(show_spinner=False)
 def get_districts(df):
     districts = df[['district']].drop_duplicates()['district'].tolist() #get unique districts from dataframe
     return districts
 
 # @st.cache(show_spinner=False, max_entries=3, ttl=60)
-@st.experimental_memo
+@st.experimental_memo(show_spinner=False)
 def get_onservice_stations(df):
     stations = df['stationId'].drop_duplicates().tolist()
     return stations
@@ -81,7 +81,7 @@ def get_onservice_stations(df):
 onservice = get_onservice_stations(df)
 
 # @st.cache(show_spinner=False, max_entries=3, ttl=60)
-@st.experimental_memo
+@st.experimental_memo(show_spinner=False)
 def times(df):
     times = pd.to_datetime(df["time"]).drop_duplicates().dt.strftime('%H:%M').values.tolist()
     times.insert(0, times[0])
