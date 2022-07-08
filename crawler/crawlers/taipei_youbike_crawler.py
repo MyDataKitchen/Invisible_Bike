@@ -63,6 +63,7 @@ if __name__ == '__main__':
         if status == True:
             aws_response = insert_data_to_s3(S3_BUCKET, S3_DIRECTORY_PATH + filename, data)
         else:
+            S3_DIRECTORY_PATH = "temp/taipei/"
             aws_response = insert_data_to_s3(S3_BUCKET, S3_DIRECTORY_PATH + filename, data)
         end = time.time()
         execution_time = end - start
