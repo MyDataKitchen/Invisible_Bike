@@ -12,11 +12,11 @@ import sys
 
 load_dotenv()
 
-WHEATHER_URL = os.getenv('WHEATHER_URL')
+WEATHER_URL = os.getenv('WEATHER_URL')
 S3_BUCKET = os.getenv('BUCKET')
-SQL_TABLE = os.getenv('WHEATHER_TABLE')
-S3_DIRECTORY_PATH = os.getenv('WHEATHER_DIRECTORY_PATH')
-FILE_NAME = os.getenv('WHEATHER_FILE_NAME')
+SQL_TABLE = os.getenv('WEATHER_TABLE')
+S3_DIRECTORY_PATH = os.getenv('WEATHER_DIRECTORY_PATH')
+FILE_NAME = os.getenv('WEATHER_FILE_NAME')
 
 def request_data(url):
     respone = requests.get(url)
@@ -46,7 +46,7 @@ def insert_data_to_mongo(source, data):
 if __name__ == '__main__':
     date_time = datetime()
     start = time.time()
-    data, updated_time, size = request_data(WHEATHER_URL)
+    data, updated_time, size = request_data(WEATHER_URL)
     end = time.time()
     response_time = end - start
 
