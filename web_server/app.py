@@ -13,7 +13,7 @@ import datetime
 import modin.pandas as pd
 import plotly.figure_factory as ff
 import plotly.graph_objects as go
-
+from PIL import Image
 
 load_dotenv()
 
@@ -27,7 +27,14 @@ engine = create_engine(f"mysql+pymysql://{ SQL_USER }:{ SQL_PASSWORD }@{ SQL_HOS
 
 #### Title ####
 
-st.set_page_config(layout="wide")
+favicon = Image.open("static/favicon.ico")
+st.set_page_config(
+     page_title="Invisible Bike",
+     page_icon=favicon,
+     layout="wide",
+     initial_sidebar_state="expanded"
+ )
+
 st.sidebar.title("INVISIBLE BIKE EXPLORER")
 st.sidebar.markdown('---')
 
@@ -219,6 +226,13 @@ def chart_1(df):
     col7.markdown('##### 整體縣市每小時的使用狀況')
 
     fig = px.line(df, x='datetime', y=['inPerMinute', 'outPerMinute'], height=500)
+    fig.update_layout(
+        xaxis_title="時間(小時)",
+        yaxis_title="使用量",
+        legend_title=""
+    )
+    fig.update_xaxes(title_text='時間(小時)')
+    fig.update_yaxes(title_text='使用量')
     newnames = {'inPerMinute': "腳踏車歸還 / 小時", 'outPerMinute': "腳踏車借出 / 小時"}
     fig.for_each_trace(lambda t: t.update(name=newnames[t.name],
                                           legendgroup=newnames[t.name],
@@ -234,13 +248,24 @@ def chart_2(districts, outPerMinute, inPerMinute):
         go.Bar(name='腳踏車歸還 / 區域', x=districts, y=outPerMinute, text=outPerMinute),
         go.Bar(name='腳踏車借出 / 區域', x=districts, y=inPerMinute, text=inPerMinute)
     ])
-    fig.update_layout(barmode='group', height=500, xaxis={'categoryorder': 'total ascending'})
+    fig.update_layout(barmode='group',
+                      height=500,
+                      xaxis={'categoryorder': 'total ascending'},
+                      xaxis_title="",
+                      yaxis_title="使用量",
+                      legend_title=""
+                      )
     col8.plotly_chart(fig, use_container_width=True)
 
 
 def chart_3(df):
     col9.markdown('##### 各市區每小時的使用狀況')
     fig = px.line(df, x='datetime', y=['outPerMinute'], color="district", height=500)
+    fig.update_layout(
+        xaxis_title="時間(小時)",
+        yaxis_title="各區域使用量",
+        legend_title=""
+    )
     col9.plotly_chart(fig, use_container_width=True)
 
 
@@ -249,6 +274,10 @@ def chart_4(districts, count):
     fig = go.Figure(data=[
         go.Bar(name='腳踏車歸還 / 區域', x=districts, y=count, text=count)
     ])
+    fig.update_layout(
+        xaxis_title="",
+        yaxis_title="各區域借用站的數量"
+    )
     fig.update_layout(barmode='group', height=500, xaxis={'categoryorder': 'total ascending'})
     col10.plotly_chart(fig, use_container_width=True)
 
@@ -277,12 +306,12 @@ if select_district != []:
 
 
     available_lots = col6.slider(
-        '可用停車位與停車位數量的比例',
+        '可借用車 ( % )',
         0, 100, (0, 100), step=5, key=1)
 
 
     shortage_lots = col6.slider(
-        '停車位空缺與停車位數量的比例',
+        '空缺車位 ( % )',
         0, 100, (0, 100), step=5, key=2)
 
 
