@@ -23,7 +23,8 @@ def insert_youbike_data_to_mongo(city, data):
             collection.insert_one(data)
             return True
         except Exception as e:
-            return e
+            print(e)
+            return False
 
     elif city == "taichung":
         try:
@@ -31,7 +32,8 @@ def insert_youbike_data_to_mongo(city, data):
             collection.insert_one(data)
             return True
         except Exception as e:
-            return e
+            print(e)
+            return False
 
     else:
         return False
@@ -44,7 +46,8 @@ def insert_weather_data_to_mongo(source, data):
             return True
 
         except Exception as e:
-            return e
+            print(e)
+            return False
 
     elif source == "weather":
         try:
@@ -53,7 +56,33 @@ def insert_weather_data_to_mongo(source, data):
             return True
 
         except Exception as e:
-            return e
+            print(e)
+            return False
 
     else:
         return False
+
+def get_temp_object():
+    try:
+        collection = db["temp"]
+        temp_object = collection.find_one()
+
+        if temp_object == None:
+            return None
+        else:
+            return temp_object
+    except Exception as e:
+        print(e)
+        return False
+
+def insert_temp_object(data):
+    try:
+        collection = db["temp"]
+        temp_object = collection.insert_one(data)
+    except Exception as e:
+        print(e)
+        return False
+
+
+
+
