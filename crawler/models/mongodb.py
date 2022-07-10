@@ -27,7 +27,7 @@ def insert_youbike_data_to_mongo(city, data):
     signal.alarm(int(TIME_LIMIT))
 
     if city == "taipei":
-        print("taipei")
+
         try:
             try:
                 collection = db["taipei"]
@@ -45,7 +45,7 @@ def insert_youbike_data_to_mongo(city, data):
             return False
 
     elif city == "taichung":
-        print("taichung")
+
         try:
             try:
                 collection = db["taichung"]
@@ -73,7 +73,7 @@ def insert_weather_data_to_mongo(source, data):
     signal.alarm(int(TIME_LIMIT))
 
     if source == "precipitation":
-        print("precipitation")
+
         try:
             try:
                 collection = db["precipitation"]
@@ -91,7 +91,7 @@ def insert_weather_data_to_mongo(source, data):
             return False
 
     elif source == "weather":
-        print("weather")
+
         try:
             try:
                 collection = db["weather"]
