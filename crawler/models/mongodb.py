@@ -2,7 +2,6 @@ from dotenv import load_dotenv
 from pymongo import MongoClient
 import os
 import signal
-import time
 
 load_dotenv()
 
