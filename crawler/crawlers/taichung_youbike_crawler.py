@@ -16,6 +16,7 @@ YOUBIKE_URL = os.getenv('TAICHUNG_YOUBIKE_URL')
 S3_BUCKET = os.getenv('BUCKET')
 SQL_TABLE = os.getenv('TAICHUNG_YOUBIKE_TABLE')
 S3_DIRECTORY_PATH = os.getenv('TAICHUNG_YOUBIKE_DIRECTORY_PATH')
+S3_TEMP_PATH = os.getenv('TAICHUNG_YOUBIKE_TEMP_DIRECTORY_PATH')
 FILE_NAME = os.getenv('TAICHUNG_YOUBIKE_FILE_NAME')
 
 
@@ -69,15 +70,21 @@ if __name__ == '__main__':
             if status == True:
                 aws_response = insert_data_to_s3(S3_BUCKET, S3_DIRECTORY_PATH + filename, data)
             else:
-                S3_DIRECTORY_PATH = "temp/taichung/"
-                aws_response = insert_data_to_s3(S3_BUCKET, S3_DIRECTORY_PATH + filename, data)
+                aws_response = insert_data_to_s3(S3_BUCKET, S3_TEMP_PATH + filename, data)
             end = time.time()
             execution_time = end - start
             insert_crawler_log(SQL_TABLE, (filename, updated_time, len(data['retVal']), size, response_time, execution_time, 1, json.dumps(aws_response)))
 
-            with open("../temp/temp_data.json", "w") as outfile:
-                json_object = json.dumps(data)
-                outfile.write(json_object)
+            try:
+                with open("../temp/temp_data.json", "w") as outfile:
+                    json_object = json.dumps(data)
+                    outfile.write(json_object)
+            except:
+                path = "../temp"
+                os.mkdir(path)
+                with open("../temp/temp_data.json", "w") as outfile:
+                    json_object = json.dumps(data)
+                    outfile.write(json_object)
 
 
     except FileNotFoundError:
@@ -88,12 +95,18 @@ if __name__ == '__main__':
         if status == True:
             aws_response = insert_data_to_s3(S3_BUCKET, S3_DIRECTORY_PATH + filename, data)
         else:
-            S3_DIRECTORY_PATH = "temp/taichung/"
-            aws_response = insert_data_to_s3(S3_BUCKET, S3_DIRECTORY_PATH + filename, data)
+            aws_response = insert_data_to_s3(S3_BUCKET, S3_TEMP_PATH + filename, data)
         end = time.time()
         execution_time = end - start
         insert_crawler_log(SQL_TABLE, (filename, updated_time, len(data['retVal']), size, response_time, execution_time, 1, json.dumps(aws_response)))
 
-        with open("../temp/temp_data.json", "w") as outfile:
-            json_object = json.dumps(data)
-            outfile.write(json_object)
+        try:
+            with open("../temp/temp_data.json", "w") as outfile:
+                json_object = json.dumps(data)
+                outfile.write(json_object)
+        except:
+            path = "../temp"
+            os.mkdir(path)
+            with open("../temp/temp_data.json", "w") as outfile:
+                json_object = json.dumps(data)
+                outfile.write(json_object)
