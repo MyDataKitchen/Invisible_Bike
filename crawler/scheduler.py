@@ -9,11 +9,14 @@ def taipei_youbike():
 def taichung_youbike():
     subprocess.run('python3 taichung_youbike_crawler.py', shell=True, cwd='crawlers')
 
+def precipitation():
+    subprocess.run('python3 precipitation_crawler.py', shell=True, cwd='crawlers')
+
+def wheather():
+    subprocess.run('python3 weather_crawler.py', shell=True, cwd='crawlers')
 
 def do_youbike_crawling():
-    print("s taipei")
     thread_1 = threading.Thread(target=taipei_youbike)
-    print("s taichung")
     thread_2 = threading.Thread(target=taichung_youbike)
     thread_1.start()
     thread_2.start()
@@ -21,8 +24,12 @@ def do_youbike_crawling():
     thread_2.join()
 
 def do_precipitation_and_wheather_crawling():
-    subprocess.run('python3 precipitation_crawler.py', shell=True, cwd='crawlers')
-    subprocess.run('python3 weather_crawler.py', shell=True, cwd='crawlers')
+    thread_1 = threading.Thread(target=precipitation)
+    thread_2 = threading.Thread(target=wheather)
+    thread_1.start()
+    thread_2.start()
+    thread_1.join()
+    thread_2.join()
 
 if __name__ == '__main__':
 
