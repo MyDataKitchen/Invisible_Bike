@@ -16,6 +16,7 @@ WEATHER_URL = os.getenv('WEATHER_URL')
 S3_BUCKET = os.getenv('BUCKET')
 SQL_TABLE = os.getenv('WEATHER_TABLE')
 S3_DIRECTORY_PATH = os.getenv('WEATHER_DIRECTORY_PATH')
+S3_TEMP_PATH = os.getenv('WEATHER_TEMP_DIRECTORY_PATH')
 FILE_NAME = os.getenv('WEATHER_FILE_NAME')
 
 def request_data(url):
@@ -53,25 +54,45 @@ if __name__ == '__main__':
     start = time.time()
     latest_log = get_latest_log(SQL_TABLE) # get latest log from mysql
 
-    datetime_request = dt.strptime(updated_time, '%Y-%m-%d %H:%M:%S')
-    datetime_log = latest_log[0]['updateTime']
+    if latest_log == ():
 
-    if datetime_request > datetime_log:
-        filename = f"{ date_time }_{ FILE_NAME }.json"
+        filename = f"{date_time}_{FILE_NAME}.json"
         mongo_data = {"created_at": updated_time, "item": data, "filename": filename}
         status = insert_data_to_mongo("weather", mongo_data)
         if status == True:
             aws_response = insert_data_to_s3(S3_BUCKET, S3_DIRECTORY_PATH + filename, data)
         else:
-            S3_DIRECTORY_PATH = "temp/weather/"
-            aws_response = insert_data_to_s3(S3_BUCKET, S3_DIRECTORY_PATH + filename, data)
+            aws_response = insert_data_to_s3(S3_BUCKET, S3_TEMP_PATH + filename, data)
         aws_response = insert_data_to_s3(S3_BUCKET, S3_DIRECTORY_PATH + filename, data)
         end = time.time()
         execution_time = end - start
-        insert_crawler_log(SQL_TABLE, (filename, updated_time, len(data['records']['location']), size, response_time, execution_time, 1, json.dumps(aws_response)))
+        insert_crawler_log(SQL_TABLE, (
+        filename, updated_time, len(data['records']['location']), size, response_time, execution_time, 1,
+        json.dumps(aws_response)))
 
     else:
-        filename = f"{ date_time }_{ FILE_NAME }.json"
-        end = time.time()
-        execution_time = end - start
-        insert_crawler_log(SQL_TABLE, (filename, updated_time, len(data['records']['location']), size, response_time, execution_time, 0, None))
+
+        datetime_request = dt.strptime(updated_time, '%Y-%m-%d %H:%M:%S')
+        datetime_log = latest_log[0]['updateTime']
+
+        if datetime_request > datetime_log:
+            filename = f"{ date_time }_{ FILE_NAME }.json"
+            mongo_data = {"created_at": updated_time, "item": data, "filename": filename}
+            status = insert_data_to_mongo("weather", mongo_data)
+            if status == True:
+                aws_response = insert_data_to_s3(S3_BUCKET, S3_DIRECTORY_PATH + filename, data)
+            else:
+                aws_response = insert_data_to_s3(S3_BUCKET, S3_TEMP_PATH + filename, data)
+            aws_response = insert_data_to_s3(S3_BUCKET, S3_DIRECTORY_PATH + filename, data)
+            end = time.time()
+            execution_time = end - start
+            insert_crawler_log(SQL_TABLE, (filename, updated_time, len(data['records']['location']), size, response_time, execution_time, 1, json.dumps(aws_response)))
+
+        else:
+            filename = f"{ date_time }_{ FILE_NAME }.json"
+            end = time.time()
+            execution_time = end - start
+            insert_crawler_log(SQL_TABLE, (filename, updated_time, len(data['records']['location']), size, response_time, execution_time, 0, None))
+
+
+
