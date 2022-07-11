@@ -193,10 +193,10 @@ def show_data(df, current_df, times, time):
                 delta_color="normal")
 
 
-def show_map(df, select_info, available_lots, shortage_lots, shortage_duration):
+def show_map(df, select_info, available_lots, shortage_duration):
     data_layout = {"可停數量":"total", "可借車輛":"availableSpace", "可停空位":"emptySpace"}
 
-    temp_df = df[((df['proportion'] >= available_lots[0]) & (df['proportion'] <= available_lots[1])) | ((df['shortageProportion'] >= shortage_lots[0]) & (df['shortageProportion'] <= shortage_lots[1]))]
+    temp_df = df[((df['proportion'] >= available_lots[0]) & (df['proportion'] <= available_lots[1]))]
     temp_df = temp_df[(temp_df['shortageDuration'] >= shortage_duration[0]) & (temp_df['shortageDuration'] <= shortage_duration[1])]
 
     fig = px.scatter_mapbox(temp_df, lat="lat", lon="lon", hover_name="name",
@@ -310,11 +310,6 @@ if select_district != []:
         0, 100, (0, 100), step=5, key=1)
 
 
-    shortage_lots = col6.slider(
-        '空缺車位 ( % )',
-        0, 100, (0, 100), step=5, key=2)
-
-
     filter_by_time_df = time_selected(df, time)
     filter_by_district_df = districts_selected(filter_by_time_df, select_district)
 
@@ -326,7 +321,7 @@ if select_district != []:
 
 
     show_data(df, filter_by_time_df, times, time)
-    show_map(filter_by_district_df,select_info, available_lots, shortage_lots, shortage_duration)
+    show_map(filter_by_district_df,select_info, available_lots, shortage_duration)
     show_temporarily_closed(df)
 
     st.markdown("---")
