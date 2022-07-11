@@ -23,7 +23,7 @@ SQL_PASSWORD = os.getenv('MYSQL_PASSWORD')
 SQL_DATABASE = os.getenv('MYSQL_DATABASE')
 
 engine = create_engine(f"mysql+pymysql://{ SQL_USER }:{ SQL_PASSWORD }@{ SQL_HOST }/{ SQL_DATABASE }",
-                       pool_size=10, max_overflow=5, pool_pre_ping=True)
+                       pool_size=20, max_overflow=5, pool_pre_ping=True)
 
 #### Title ####
 
@@ -47,7 +47,7 @@ city = st.sidebar.selectbox(
 
 date = st.sidebar.date_input(
           "選取日期",
-          datetime.date(2022, 6, 28), min_value=datetime.date(2022, 6, 26), max_value=datetime.date(2022, 6, 28))
+          datetime.date(2022, 7, 11), min_value=datetime.date(2022, 7, 11), max_value=datetime.date(2022, 7, 12))
 
 
 def show_date(date):
@@ -67,7 +67,7 @@ def select_city(city):
 # @st.cache(show_spinner=False, max_entries=5, ttl=60)
 @st.experimental_memo(show_spinner=False) #add cache without showing loading
 def load_parquet(city, date):
-    df = get_parquet_from_s3("invisible-bike", f"parquet/{ city }/{ date }_{ city }.parquet")
+    df = get_parquet_from_s3("invisible-bikes", f"parquet/{ city }/{ date }_{ city }.parquet")
     df['datetime'] = pd.to_datetime(df['datetime'])
     return df
 
@@ -196,7 +196,7 @@ def show_data(df, current_df, times, time):
 def show_map(df, select_info, available_lots, shortage_lots, shortage_duration):
     data_layout = {"可停數量":"total", "可借車輛":"availableSpace", "可停空位":"emptySpace"}
 
-    temp_df = df[((df['proportion'] >= available_lots[0]) & (df['proportion'] <= available_lots[1]))]
+    temp_df = df[((df['proportion'] >= available_lots[0]) & (df['proportion'] <= available_lots[1])) | ((df['shortageProportion'] >= shortage_lots[0]) & (df['shortageProportion'] <= shortage_lots[1]))]
     temp_df = temp_df[(temp_df['shortageDuration'] >= shortage_duration[0]) & (temp_df['shortageDuration'] <= shortage_duration[1])]
 
     fig = px.scatter_mapbox(temp_df, lat="lat", lon="lon", hover_name="name",
