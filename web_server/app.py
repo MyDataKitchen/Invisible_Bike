@@ -1,7 +1,8 @@
 import os
-os.environ["MODIN_ENGINE"] = "ray"  # Modin will use Ray
-import ray
-ray.init(ignore_reinit_error=True,object_store_memory=2000 * 1024 * 1024)
+#os.environ["MODIN_ENGINE"] = "ray"  # Modin will use Ray
+os.environ["MODIN_ENGINE"] = "dask"
+# import ray
+# ray.init(ignore_reinit_error=True,object_store_memory=2000 * 1024 * 1024)
 from models.s3 import get_parquet_from_s3
 from models.mysql import get_all_stations
 from dotenv import load_dotenv
@@ -70,6 +71,7 @@ def load_parquet(city, date):
     df = get_parquet_from_s3("invisible-bikes", f"parquet/{ city }/{ date }_{ city }.parquet")
     df['datetime'] = pd.to_datetime(df['datetime'])
     return df
+
 
 df = load_parquet(select_city(city), date)
 
@@ -200,9 +202,9 @@ def show_map(df, select_info, available_lots, shortage_duration):
     temp_df = temp_df[(temp_df['shortageDuration'] >= shortage_duration[0]) & (temp_df['shortageDuration'] <= shortage_duration[1])]
 
     fig = px.scatter_mapbox(temp_df, lat="lat", lon="lon", hover_name="name",
-                            hover_data=["total", "emptySpace", "district", "proportion", "availableSpace"],
-                            color="proportion", size = data_layout[select_info],
-                            zoom=11, height=680, opacity=.8, color_continuous_scale="plotly3")
+                            hover_data=["emptySpace", "district", "availableSpace"],
+                            color="color", size = data_layout[select_info],
+                            zoom=11, height=680, opacity=.8)
     fig.update_layout(mapbox_style="carto-positron", autosize=True, margin={"r": 0, "t": 0, "l": 0, "b": 0},hovermode='closest')
 
     col5.plotly_chart(fig, use_container_width=True)
