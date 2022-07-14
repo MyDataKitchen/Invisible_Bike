@@ -199,7 +199,7 @@ def taichung_youbike_etl():
                 break
 
             filename = event['filename']
-            print(f"thread_1 - {filename}")
+            print(f"thread_2 - {filename}")
             start = time.time()
             if get_temp_data("taichung") == None:
                 temp_data = {}
@@ -246,7 +246,7 @@ def taichung_youbike_etl():
 
 
 if __name__ == '__main__':
-    subprocess.run(["python3", "mongo_to_mysql.py:"])
+    subprocess.run(["python3", "s3_temp_to_mongo"])
 
     thread_1 = threading.Thread(target=taipei_youbike_etl)
     thread_2 = threading.Thread(target=taichung_youbike_etl)
