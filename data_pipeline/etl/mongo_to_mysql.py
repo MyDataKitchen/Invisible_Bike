@@ -169,6 +169,7 @@ def taipei_youbike_etl():
             events.next()
         except StopIteration:
             events.rewind()
+            time.sleep(30)
 
 
 def taichung_youbike_etl():
@@ -243,6 +244,7 @@ def taichung_youbike_etl():
             events.next()
         except StopIteration:
             events.rewind()
+            time.sleep(30)
 
 
 if __name__ == '__main__':
