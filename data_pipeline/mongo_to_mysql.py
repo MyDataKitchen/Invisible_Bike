@@ -1,5 +1,5 @@
 from data_pipeline.models.mysql import insert_data_to_record, get_data_processed_record
-from data_pipeline.models.mongodb import get_temp_data, insert_temp_data, delete_data
+from data_pipeline.models.mongodb import get_temp_data, insert_temp_data, delete_data, insert_log
 from sqlalchemy import create_engine
 from pymongo import MongoClient
 from dotenv import load_dotenv
@@ -7,6 +7,7 @@ from datetime import datetime as dt
 import pandas as pd
 import os
 import threading
+import time
 
 load_dotenv()
 
@@ -14,12 +15,12 @@ MONGO_HOST = os.getenv('MONGO_HOST')
 MONGO_USER = os.getenv('MONGO_USER')
 MONGO_PASSWORD = os.getenv('MONGO_PASSWORD')
 MONGO_DATABASE = os.getenv('MONGO_DATABASE')
-QUEUE_SIZE = os.getenv('QUEUE_SIZE')
 
 client = MongoClient(MONGO_HOST,
                      username=MONGO_USER,
                      password=MONGO_PASSWORD
                     )
+
 
 SQL_HOST = os.getenv('MYSQL_HOST')
 SQL_USER = os.getenv('MYSQL_USER')
@@ -113,6 +114,16 @@ def taipei_youbike_etl():
         events = col.find({'created_at': {'$gt': temp_time}}, allow_disk_use=True).sort("created_at", 1)
 
         for event in events:
+            while True:
+                try:
+                    engine.connect()
+                except:
+                    log = {"status": "RDS connection failed"}
+                    insert_log("taipei_youbike_etl", log)
+                    time.sleep(60) # sleep 1 minute
+                    continue
+                break
+
             filename = event['filename']
             print(f"thread_1 - { filename }")
             start = time.time()
@@ -177,6 +188,16 @@ def taichung_youbike_etl():
         events = col.find({'created_at': {'$gt': temp_time}}, allow_disk_use=True).sort("created_at", 1)
 
         for event in events:
+            while True:
+                try:
+                    engine.connect()
+                except:
+                    log = {"status": "RDS connection failed"}
+                    insert_log("taichung_youbike_etl", log)
+                    time.sleep(60) # sleep 1 minute
+                    continue
+                break
+
             filename = event['filename']
             print(f"thread_1 - {filename}")
             start = time.time()
