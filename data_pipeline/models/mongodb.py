@@ -71,6 +71,12 @@ def delete_data(source, filename):
         print(e)
         return False
 
+def insert_log(source, data):
+    collection = db["log"]
+    updated_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    collection.insert_one({"filename": f"{ source }_log", "created_at": updated_time, "log": data })
+
+
 
 
 
