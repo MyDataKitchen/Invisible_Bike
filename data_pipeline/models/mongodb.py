@@ -43,27 +43,33 @@ def insert_s3_temp_to_mongo(source, data):
     return False
 
 
-def insert_temp_data(data):
+def insert_temp_data(source, data):
     collection = db["temp"]
     updated_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     try:
-        collection.insert_one({"_id": "temp", "created_at": updated_time, "item": data })
+        collection.insert_one({"_id": f"{ source }_temp", "created_at": updated_time, "item": data })
     except pymongo.errors.DuplicateKeyError:
-        collection.update_one({"_id": "temp", "created_at": updated_time, "item": data })
+        query = {"_id": f"{ source }_temp"}
+        updated_data = {"$set": {"created_at": updated_time, "item": data}}
+        collection.update_one(query, updated_data)
 
 
-def get_temp_data():
+def get_temp_data(source):
     collection = db["temp"]
-    result = collection.find_one({"_id": "temp"})
+    result = collection.find_one({"_id": f"{ source }_temp"})
     return result
 
 
-def get_data():
-    pass
+def delete_data(source, filename):
+    try:
+        collection = db[source]
+        query = {"filename": filename}
+        collection.delete_one(query)
+        return True
 
-
-def delete_data():
-    pass
+    except Exception as e:
+        print(e)
+        return False
 
 
 
