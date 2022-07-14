@@ -79,7 +79,7 @@ def weather_extract_and_load(path):
                 print("Weather - Failed to write to MongDB")
 
     else:
-        print("Weather - temp data")
+        print("Weather - No temp data")
 
 
 def precipitation_extract_and_load(path):
@@ -105,7 +105,7 @@ def precipitation_extract_and_load(path):
                 print("Precipitation - Failed to write to MongDB")
 
     else:
-        print("Precipitation - temp data")
+        print("Precipitation - No temp data")
 
 
 if __name__ == '__main__':
