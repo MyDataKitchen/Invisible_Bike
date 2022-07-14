@@ -27,31 +27,45 @@ def get_s3_temp_filenames(path):
     path_list = path.split("/")
     path_length = len(path_list)
 
-    if path_length == 2:
+
+    if path_length == 3:
         if path_list[1] == "weather":
             filenames = get_filenames(path=path)
             filenames.pop(0)
-            return filenames
+            if filenames == []:
+                return False
+            else:
+                return filenames
 
         elif path_list[1] == "precipitation":
             filenames = get_filenames(path=path)
             filenames.pop(0)
-            return filenames
+            if filenames == []:
+                return False
+            else:
+                return filenames
 
-    elif path_length == 3:
+    elif path_length == 4:
 
         if path_list[2] == "taipei":
             filenames = get_filenames(path=path)
             filenames.pop(0)
-            return filenames
+            if filenames == []:
+                return False
+            else:
+                return filenames
 
         elif path_list[2] == "taichung":
             filenames = get_filenames(path=path)
             filenames.pop(0)
-            return filenames
+            if filenames == []:
+                return False
+            else:
+                return filenames
 
     else:
-        print("Path Undefined")
+
+        return "Path Undefined"
 
 
 def get_data_from_s3(filename):
