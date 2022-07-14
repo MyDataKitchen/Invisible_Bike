@@ -246,7 +246,7 @@ def taichung_youbike_etl():
 
 
 if __name__ == '__main__':
-    subprocess.run(["python3", "s3_temp_to_mongo"])
+    subprocess.run(["python3", "s3_temp_to_mongo.py"])
 
     thread_1 = threading.Thread(target=taipei_youbike_etl)
     thread_2 = threading.Thread(target=taichung_youbike_etl)
