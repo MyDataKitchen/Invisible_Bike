@@ -15,7 +15,7 @@ engine = create_engine(f"mysql+pymysql://{ SQL_USER }:{ SQL_PASSWORD }@{ SQL_HOS
 def insert_data_to_record(params):
     try:
         engine.execute(
-            "INSERT INTO mongo_data_processed (filename, datetime, created_time, data_source) VALUES (%s, %s, %s, %s)", params
+            "INSERT INTO mongo_data_processed (filename, datetime, created_time, data_source, processing_time, origin_data, final_data, data_error) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)", params
         )
         return True
 
