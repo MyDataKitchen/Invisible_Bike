@@ -129,8 +129,6 @@ dmypy.json
 .pyre/
 
 .DS_Store
-<<<<<<< HEAD
-.idea
-=======
+
 .idea/
->>>>>>> web_server
+
