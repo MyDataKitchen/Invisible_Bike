@@ -50,7 +50,7 @@ def taichung_extract_and_load(path):
             else:
                 updated_time = data['updated_at']
             data = {"created_at": updated_time, "item": data, "filename": filename}
-            source = "taipei"
+            source = "taichung"
             status = insert_s3_temp_to_mongo(source, data)
             if status == True:
                 print("Taichung - Insert to MongDB successful")
@@ -74,7 +74,7 @@ def weather_extract_and_load(path):
             else:
                 updated_time = data['records']['location'][0]['time']['obsTime']
             data = {"created_at": updated_time, "item": data, "filename": filename}
-            source = "taipei"
+            source = "weather"
             status = insert_s3_temp_to_mongo(source, data)
             if status == True:
                 print("Weather - Insert to MongDB successful")
@@ -99,7 +99,7 @@ def precipitation_extract_and_load(path):
                 updated_time = data['cwbopendata']['location'][0]['time']['obsTime']
                 updated_time = datetime.datetime.strptime(updated_time,"%Y-%m-%dT%H:%M:%S+08:00").strftime('%Y-%m-%d %H:%M:%S')
             data = {"created_at": updated_time, "item": data, "filename": filename}
-            source = "taipei"
+            source = "precipitation"
             status = insert_s3_temp_to_mongo(source, data)
             if status == True:
                 print("Precipitation - Insert to MongDB successful")
