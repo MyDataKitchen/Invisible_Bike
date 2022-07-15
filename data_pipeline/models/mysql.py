@@ -30,3 +30,22 @@ def get_data_processed_record(param):
     created_time = result.fetchall()
     result.close()
     return created_time
+
+
+def get_event_data(query):
+    result = engine.execute(query)
+    rows = result.fetchall()
+    result.close()
+    return rows
+
+
+def insert_parquet_record(params):
+    try:
+        engine.execute(
+            "INSERT INTO mysql_data_processed (filename, datetime, data_source, query_time, convert_time, insert_time, awsRespone) VALUES (%s, %s, %s, %s, %s, %s, %s)", params
+        )
+        return True
+
+    except Exception as e:
+        print(e)
+        return False

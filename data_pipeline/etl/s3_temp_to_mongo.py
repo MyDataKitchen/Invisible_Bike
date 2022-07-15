@@ -11,14 +11,18 @@ PRECIPITATION_TEMP = os.getenv('PRECIPITATION_TEMP_DIRECTORY_PATH')
 
 def taipei_extract_and_load(path):
     filenames = get_s3_temp_filenames(path)
-    if filenames == True:
 
+
+    if filenames == False:
+        print("Taipei - No temp data")
+    else:
         for filename in filenames:
             data = get_data_from_s3(filename)
             if data == None:
                 pass
             else:
                 updated_time = data[0]['srcUpdateTime']
+                print(updated_time)
             data = {"created_at": updated_time, "item": data, "filename": filename}
             source = "taipei"
             status = insert_s3_temp_to_mongo(source, data)
@@ -29,14 +33,16 @@ def taipei_extract_and_load(path):
                 move_temp_file(origin, destination)
             else:
                 print("Taipei - Failed to write to MongDB")
-    else:
-        print("Taipei - No temp data")
+
 
 
 
 def taichung_extract_and_load(path):
     filenames = get_s3_temp_filenames(path)
-    if filenames == True:
+
+    if filenames == False:
+        print("Taichung - No temp data")
+    else:
         for filename in filenames:
             data = get_data_from_s3(filename)
             if data == None:
@@ -44,7 +50,7 @@ def taichung_extract_and_load(path):
             else:
                 updated_time = data['updated_at']
             data = {"created_at": updated_time, "item": data, "filename": filename}
-            source = "taipei"
+            source = "taichung"
             status = insert_s3_temp_to_mongo(source, data)
             if status == True:
                 print("Taichung - Insert to MongDB successful")
@@ -54,13 +60,13 @@ def taichung_extract_and_load(path):
             else:
                 print("Taichung - Failed to write to MongDB")
 
-    else:
-        print("Taichung - No temp data")
 
 
 def weather_extract_and_load(path):
     filenames = get_s3_temp_filenames(path)
-    if filenames == True:
+    if filenames == False:
+        print("Weather - No temp data")
+    else:
         for filename in filenames:
             data = get_data_from_s3(filename)
             if data == None:
@@ -68,7 +74,7 @@ def weather_extract_and_load(path):
             else:
                 updated_time = data['records']['location'][0]['time']['obsTime']
             data = {"created_at": updated_time, "item": data, "filename": filename}
-            source = "taipei"
+            source = "weather"
             status = insert_s3_temp_to_mongo(source, data)
             if status == True:
                 print("Weather - Insert to MongDB successful")
@@ -78,14 +84,13 @@ def weather_extract_and_load(path):
             else:
                 print("Weather - Failed to write to MongDB")
 
-    else:
-        print("Weather - No temp data")
-
 
 def precipitation_extract_and_load(path):
     import datetime
     filenames = get_s3_temp_filenames(path)
-    if filenames == True:
+    if filenames == False:
+        print("Precipitation - No temp data")
+    else:
         for filename in filenames:
             data = get_data_from_s3(filename)
             if data == None:
@@ -94,7 +99,7 @@ def precipitation_extract_and_load(path):
                 updated_time = data['cwbopendata']['location'][0]['time']['obsTime']
                 updated_time = datetime.datetime.strptime(updated_time,"%Y-%m-%dT%H:%M:%S+08:00").strftime('%Y-%m-%d %H:%M:%S')
             data = {"created_at": updated_time, "item": data, "filename": filename}
-            source = "taipei"
+            source = "precipitation"
             status = insert_s3_temp_to_mongo(source, data)
             if status == True:
                 print("Precipitation - Insert to MongDB successful")
@@ -104,8 +109,8 @@ def precipitation_extract_and_load(path):
             else:
                 print("Precipitation - Failed to write to MongDB")
 
-    else:
-        print("Precipitation - No temp data")
+
+
 
 
 if __name__ == '__main__':
