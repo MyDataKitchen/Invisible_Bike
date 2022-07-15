@@ -2,6 +2,7 @@ from dotenv import load_dotenv
 import os
 import boto3
 import json
+import io
 
 load_dotenv()
 
@@ -97,6 +98,14 @@ def move_temp_file(origin, destination):
     except Exception as e:
         print(e)
         return False
+
+def insert_parquet_to_s3(df, filename):
+    buffer = io.BytesIO()
+    df.to_parquet(buffer, index=False)
+    filepath = f"parquet/{ filename }"
+    data = s3.Object(S3_BUCKET, filepath)
+    respone = data.put(Body=buffer.getvalue())
+    return respone
 
 
 
