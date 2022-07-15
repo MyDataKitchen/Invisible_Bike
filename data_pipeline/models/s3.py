@@ -71,7 +71,7 @@ def get_s3_temp_filenames(path):
 
 def get_data_from_s3(filename):
 
-    def get_json_from_s3(key):
+    def get_json_from_s3(S3_BUCKET, key):
         try:
             obj = s3.Object(S3_BUCKET, key)
             data = obj.get()['Body'].read().decode('utf-8').splitlines()
@@ -90,7 +90,7 @@ def get_data_from_s3(filename):
 
 def move_temp_file(origin, destination):
     try:
-        s3.Object(S3_BUCKET, f"{ destination }").copy_from(CopySource=f"{ S3_BUCKET } + { origin }")
+        s3.Object(S3_BUCKET, f"{ destination }").copy_from(CopySource=f"{ S3_BUCKET }/{ origin }")
         print("Copy File Done")
         s3.Object(S3_BUCKET, f"{ origin }").delete()
         print("Delete File Done")
