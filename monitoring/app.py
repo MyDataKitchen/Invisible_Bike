@@ -52,7 +52,7 @@ def taichung_mysql_logs(date, city):
 @st.experimental_memo(show_spinner=False, ttl=120)
 def check_duplicate_data(date, city):
     df = crawler_logs(date.strftime("%Y-%m-%d"), city)
-    df = df[['Insert Time (s)','Status']].groupby(['Status']).count().reset_index().drop(columns="Status").rename(columns={'Insert Time (s)': 'Status'}, index={0: 'Duplicate', 1: 'Available Data'})
+    df = df[['Insert Time (s)','Status']].groupby(['Status']).count().rename(columns={'Insert Time (s)': 'Status'}, index={0: 'Duplicate', 1: 'Available Data'})
     return df
 
 
