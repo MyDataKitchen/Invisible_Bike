@@ -18,7 +18,7 @@ st.sidebar.markdown('---')
 
 date = st.sidebar.date_input(
           "選取日期",
-          get_date(), min_value=datetime.date(2022, 7, 13), max_value=get_date())
+          get_date(), min_value=datetime.date(2022, 7, 15), max_value=get_date())
 
 @st.experimental_memo(show_spinner=False, ttl=120)
 def taipei_crawler_logs(date, city):
@@ -84,6 +84,16 @@ def show_respone_time(df):
 
 show_respone_time(df_tp_crawler)
 
+def show_respone_time(df):
+    fig = px.line(df, x='Datetime', y='Data Length', title='每筆資料的數量 (個)')
+    fig.update_xaxes(rangeslider_visible=True)
+    fig.update_traces(line_color='#636EFA')
+    st.plotly_chart(fig, use_container_width=True)
+
+show_respone_time(df_tp_crawler)
+
+
+
 # st.markdown("---")
 st.subheader('台中 YOUBIKE 資料請求系統')
 
@@ -97,6 +107,15 @@ show_respone_time(df_tc_crawler)
 
 def show_respone_time(df):
     fig = px.line(df, x='Datetime', y='Insert Time (s)', title='資料寫入時間 (秒)')
+    fig.update_xaxes(rangeslider_visible=True)
+    fig.update_traces(line_color='#FF7F0E')
+    st.plotly_chart(fig, use_container_width=True)
+
+show_respone_time(df_tc_crawler)
+
+
+def show_respone_time(df):
+    fig = px.line(df, x='Datetime', y='Data Length', title='每筆資料的數量 (個)')
     fig.update_xaxes(rangeslider_visible=True)
     fig.update_traces(line_color='#FF7F0E')
     st.plotly_chart(fig, use_container_width=True)
