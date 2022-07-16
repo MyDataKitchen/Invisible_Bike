@@ -4,7 +4,7 @@ os.environ["MODIN_ENGINE"] = "dask"
 # import ray
 # ray.init(ignore_reinit_error=True,object_store_memory=2000 * 1024 * 1024)
 from models.s3 import get_parquet_from_s3
-from models.mysql import get_all_stations
+from models.mysql import get_all_stations, get_date
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from datetime import datetime as dt
@@ -48,7 +48,7 @@ city = st.sidebar.selectbox(
 
 date = st.sidebar.date_input(
           "選取日期",
-          datetime.date(2022, 7, 11), min_value=datetime.date(2022, 7, 11), max_value=datetime.date(2022, 7, 12))
+          get_date(), min_value=datetime.date(2022, 7, 11), max_value=get_date())
 
 
 def show_date(date):
