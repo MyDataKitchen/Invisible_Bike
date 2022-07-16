@@ -37,14 +37,14 @@ def taichung_crawler_logs(date, city):
 @st.experimental_memo(show_spinner=False, ttl=120)
 def taipei_mysql_logs(date, city):
     df = mysql_logs(date.strftime("%Y-%m-%d"), city)
-    df = df.groupby(pd.Grouper(key='Datetime', axis=0, freq='3Min')).agg(
+    df = df.groupby(pd.Grouper(key='Datetime', axis=0, freq='5Min')).agg(
         {'Querying Time (s)': 'max', 'Transforming Time (s)': 'max', 'Insert Time (s)': 'max'}).reset_index()
     return df
 
 @st.experimental_memo(show_spinner=False, ttl=120)
 def taichung_mysql_logs(date, city):
     df = mysql_logs(date.strftime("%Y-%m-%d"), city)
-    df = df.groupby(pd.Grouper(key='Datetime', axis=0, freq='3Min')).agg(
+    df = df.groupby(pd.Grouper(key='Datetime', axis=0, freq='5Min')).agg(
         {'Querying Time (s)': 'max', 'Transforming Time (s)': 'max', 'Insert Time (s)': 'max'}).reset_index()
     return df
 
