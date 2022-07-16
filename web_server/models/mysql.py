@@ -19,3 +19,10 @@ def get_all_stations(city):
     df = pd.read_sql_query(query, engine)
     stations_id = df['stationId'].tolist()
     return df, stations_id
+
+def get_date():
+    query = f"SELECT datetime FROM mysql_data_processed ORDER BY id DESC LIMIT 1"
+    result = engine.execute(query)
+    date = result.fetchall()
+    result.close()
+    return date[0][0].date()
