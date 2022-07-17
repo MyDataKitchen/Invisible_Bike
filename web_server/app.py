@@ -1,6 +1,7 @@
 import os
+# os.environ["MODIN_ENGINE"] = "dask"
+os.environ["MODIN_ENGINE"] = "ray"
 
-os.environ["MODIN_ENGINE"] = "dask"
 from models.s3 import get_parquet_from_s3
 from models.mysql import get_all_stations, get_date
 from dotenv import load_dotenv
@@ -37,7 +38,7 @@ def main():
          initial_sidebar_state="expanded"
      )
 
-    st.sidebar.title("INVISIBLE BIKE EXPLORER")
+    st.sidebar.title("INVISIBLE BIKES EXPLORER")
     st.sidebar.markdown('---')
 
 
@@ -67,7 +68,7 @@ def main():
     #### Get Parquet From S3 ####
 
     # @st.cache(show_spinner=False, max_entries=5, ttl=60)
-    @st.experimental_memo(show_spinner=False, ttl=60) #add cache without showing loading
+    @st.experimental_memo(show_spinner=False, ttl=600) #add cache without showing loading
     def load_parquet(city, date):
         df = get_parquet_from_s3("invisible-bikes", f"parquet/{ city }/{ date }_{ city }.parquet")
         df['日期時間'] = pd.to_datetime(df['日期時間'])
@@ -78,13 +79,13 @@ def main():
     df = load_parquet(select_city(city), date)
 
     # @st.cache(show_spinner=False, max_entries=3, ttl=60)
-    @st.experimental_memo(show_spinner=False, ttl=60)
+    @st.experimental_memo(show_spinner=False, ttl=600)
     def get_districts(df):
         districts = df[['區域']].drop_duplicates()['區域'].tolist() #get unique districts from dataframe
         return districts
 
     # @st.cache(show_spinner=False, max_entries=3, ttl=60)
-    @st.experimental_memo(show_spinner=False, ttl=60)
+    @st.experimental_memo(show_spinner=False, ttl=600)
     def get_onservice_stations(df):
         stations = df['借用站編號'].drop_duplicates().tolist()
         return stations
@@ -92,7 +93,7 @@ def main():
     onservice = get_onservice_stations(df)
 
     # @st.cache(show_spinner=False, max_entries=3, ttl=60)
-    @st.experimental_memo(show_spinner=False, ttl=60)
+    @st.experimental_memo(show_spinner=False, ttl=600)
     def times(df):
         times = pd.to_datetime(df["時間"]).drop_duplicates().dt.strftime('%H:%M').values.tolist()
         times.insert(0, times[0])
@@ -100,7 +101,7 @@ def main():
 
     times = times(df)
 
-    @st.cache(show_spinner=False, max_entries=3, ttl=60)
+    @st.cache(show_spinner=False, max_entries=3, ttl=600)
     def districts_selected(df, districts):
         df = df[df['區域'].isin(districts)]
         return df
@@ -111,14 +112,14 @@ def main():
         return df
 
 
-    @st.cache(show_spinner=False, suppress_st_warning=True, ttl=60)
+    @st.cache(show_spinner=False, suppress_st_warning=True, ttl=600)
     def daily_usage(df):
         df = df.groupby(pd.Grouper(key='日期時間', axis=0, freq='30Min')).agg(
             {'歸還數量': 'sum', '借出數量': 'sum'}).reset_index()
         return df
 
 
-    @st.cache(show_spinner=False, suppress_st_warning=True, ttl=60)
+    @st.cache(show_spinner=False, suppress_st_warning=True, ttl=600)
     def district_usage(df):
         df = df.groupby("區域").agg({'借出數量': 'sum', '歸還數量': 'sum'}).reset_index()
         districts = df["區域"].tolist()
@@ -127,13 +128,13 @@ def main():
         return districts, outPerMinute, inPerMinute
 
 
-    @st.cache(show_spinner=False, suppress_st_warning=True, ttl=60)
+    @st.cache(show_spinner=False, suppress_st_warning=True, ttl=600)
     def daily_district_usage(df):
         df = df.groupby(['區域', pd.Grouper(key='日期時間', freq='30Min')]).agg(
             {'借出數量': 'sum', '歸還數量': 'sum'}).reset_index()
         return df
 
-    @st.cache(show_spinner=False, suppress_st_warning=True, ttl=60)
+    @st.cache(show_spinner=False, suppress_st_warning=True, ttl=600)
     def station_number(df):
         df = df.groupby(['區域']).agg({'借用站編號': 'count'}).reset_index()
         districts = df['區域'].tolist()
