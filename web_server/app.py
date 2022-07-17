@@ -50,7 +50,7 @@ def main():
 
     date = st.sidebar.date_input(
               "選取日期",
-              datetime.date(2022, 7, 20), min_value=datetime.date(2022, 7, 11), max_value=datetime.date(2022, 7, 20))
+              get_date(), min_value=datetime.date(2022, 7, 11), max_value=get_date())
 
 
     def show_date(date):
@@ -150,7 +150,7 @@ def main():
 
 
     ### Show Date ####
-    co1, co2, col3 = st.columns([4,6,1])
+    co1, co2, col3 = st.columns([5,6,1])
 
     co1.write(show_date(date))
 
@@ -237,7 +237,7 @@ def main():
     def chart_1(df):
         st.markdown(f'##### {city}市每小時的使用狀況')
 
-        fig = px.line(df, x='日期時間', y=['歸還數量', '借出數量'], height=450)
+        fig = px.line(df, x='日期時間', y=['歸還數量', '借出數量'], height=500)
         fig.update_layout(
             xaxis_title="時間(小時)",
             yaxis_title="使用量",
@@ -255,7 +255,7 @@ def main():
 
     def chart_2(df):
         st.markdown(f'##### {city}市各區每小時的使用狀況')
-        fig = px.line(df, x='日期時間', y=['借出數量'], color="區域", height=450)
+        fig = px.line(df, x='日期時間', y=['借出數量'], color="區域", height=500)
         fig.update_layout(
             xaxis_title="時間(小時)",
             yaxis_title="各區域使用量",
