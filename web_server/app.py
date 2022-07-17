@@ -205,7 +205,7 @@ def show_map(df, shortage_duration):
     fig = px.scatter_mapbox(temp_df, lat="緯度", lon="經度", hover_name="借用站名稱",
                             hover_data=["可借用腳踏車數量", "空位數量", "區域"],
                             color="腳踏車供應狀況",size="停車位數量", size_max=11,
-                            zoom=11, height=680, opacity=.8,color_discrete_map={'red': '#EF553E',
+                            zoom=11, height=600, opacity=.8,color_discrete_map={'red': '#EF553E',
                                  'yellow':'#FECB52', 'green':'#2CA02C'})
     fig.update_layout(mapbox_style="carto-positron", autosize=True, margin={"r": 0, "t": 0, "l": 0, "b": 0},hovermode='closest')
 
