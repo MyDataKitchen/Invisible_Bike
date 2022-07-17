@@ -71,6 +71,7 @@ def main():
     @st.experimental_memo(show_spinner=False, ttl=600) #add cache without showing loading
     def load_parquet(city, date):
         df = get_parquet_from_s3("invisible-bikes", f"parquet/{ city }/{ date }_{ city }.parquet")
+
         df['日期時間'] = pd.to_datetime(df['日期時間'])
 
         return df
@@ -149,11 +150,12 @@ def main():
 
 
     ### Show Date ####
-    co1, co2 = st.columns([5,1])
+    co1, co2, col3 = st.columns([4,6,1])
 
     co1.write(show_date(date))
 
-    co2.caption(f"更新時間: { get_date() }", unsafe_allow_html=False)
+    col3.caption(f"更新時間:", unsafe_allow_html=False)
+    col3.caption(f"{get_date()}", unsafe_allow_html=False)
     st.markdown("---")
 
 
@@ -179,7 +181,7 @@ def main():
         #             delta_color="inverse")
 
 
-        col1.metric(label="服務中的數量 / 借用站總量", value = f"{ len(onservice) } / { len(stations_id) }",
+        co2.metric(label="服務中的數量 / 借用站總量", value = f"{ len(onservice) } / { len(stations_id) }",
                     delta_color="off")
 
         if round(float((current_return - pre_return) / current_return), 2) >= 0 and round(float((current_return - pre_return) / current_return), 2) <= 100:
@@ -188,7 +190,7 @@ def main():
             return_result = 0
             pass
 
-        col2.metric(label="歸還數量", value = current_df['歸還數量'].sum())
+        # col2.metric(label="歸還數量", value = current_df['歸還數量'].sum())
 
         if round(float((current_lend - pre_lend) /  current_lend), 2) >= 0 and round(float((current_lend - pre_lend) /  current_lend), 2) <= 100:
             lend_result = round(float((current_lend - pre_lend) /  current_lend), 2)
@@ -196,10 +198,11 @@ def main():
             lend_result = 0
             pass
 
-        col3.metric(label="借出數量", value = current_df['借出數量'].sum())
+        # col3.metric(label="借出數量", value = current_df['借出數量'].sum())
 
 
     def show_map(df, shortage_duration):
+
 
 
         temp_df = df[(df['缺車的時間長度'] >= shortage_duration[0]) & (df['缺車的時間長度'] <= shortage_duration[1])]
@@ -221,7 +224,7 @@ def main():
         df_all, stations_id = get_all_stations(city)
         temporarily_closed_stations = df_all[df_all['stationId'].isin(list(set(stations_id) - set(get_onservice_stations(df))))].values.tolist()
         st.markdown("---")
-        st.markdown("##### 目前暫停服務的借用站")
+        st.markdown(f"##### { city }市目前暫停服務的借用站")
         st.text(" \n")
         if temporarily_closed_stations == []:
             st.info('目前全部借用站已投入服務')
@@ -286,9 +289,6 @@ def main():
         col5, col6 = st.columns([100, 1])
 
         #### Map Container #####
-
-
-
 
 
         time = st.select_slider(
