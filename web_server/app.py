@@ -1,8 +1,6 @@
 import os
-#os.environ["MODIN_ENGINE"] = "ray"  # Modin will use Ray
+
 os.environ["MODIN_ENGINE"] = "dask"
-# import ray
-# ray.init(ignore_reinit_error=True,object_store_memory=2000 * 1024 * 1024)
 from models.s3 import get_parquet_from_s3
 from models.mysql import get_all_stations, get_date
 from dotenv import load_dotenv
@@ -15,6 +13,7 @@ import modin.pandas as pd
 import plotly.figure_factory as ff
 import plotly.graph_objects as go
 from PIL import Image
+
 
 load_dotenv()
 
@@ -48,7 +47,7 @@ city = st.sidebar.selectbox(
 
 date = st.sidebar.date_input(
           "選取日期",
-          get_date(), min_value=datetime.date(2022, 7, 11), max_value=get_date())
+          datetime.date(2022, 7, 20), min_value=datetime.date(2022, 7, 11), max_value=datetime.date(2022, 7, 20))
 
 
 def show_date(date):
@@ -66,33 +65,34 @@ def select_city(city):
 #### Get Parquet From S3 ####
 
 # @st.cache(show_spinner=False, max_entries=5, ttl=60)
-@st.experimental_memo(show_spinner=False) #add cache without showing loading
+@st.experimental_memo(show_spinner=False, ttl=60) #add cache without showing loading
 def load_parquet(city, date):
     df = get_parquet_from_s3("invisible-bikes", f"parquet/{ city }/{ date }_{ city }.parquet")
-    df['datetime'] = pd.to_datetime(df['datetime'])
+    df['日期時間'] = pd.to_datetime(df['日期時間'])
+
     return df
 
 
 df = load_parquet(select_city(city), date)
 
 # @st.cache(show_spinner=False, max_entries=3, ttl=60)
-@st.experimental_memo(show_spinner=False)
+@st.experimental_memo(show_spinner=False, ttl=60)
 def get_districts(df):
-    districts = df[['district']].drop_duplicates()['district'].tolist() #get unique districts from dataframe
+    districts = df[['區域']].drop_duplicates()['區域'].tolist() #get unique districts from dataframe
     return districts
 
 # @st.cache(show_spinner=False, max_entries=3, ttl=60)
-@st.experimental_memo(show_spinner=False)
+@st.experimental_memo(show_spinner=False, ttl=60)
 def get_onservice_stations(df):
-    stations = df['stationId'].drop_duplicates().tolist()
+    stations = df['借用站編號'].drop_duplicates().tolist()
     return stations
 
 onservice = get_onservice_stations(df)
 
 # @st.cache(show_spinner=False, max_entries=3, ttl=60)
-@st.experimental_memo(show_spinner=False)
+@st.experimental_memo(show_spinner=False, ttl=60)
 def times(df):
-    times = pd.to_datetime(df["time"]).drop_duplicates().dt.strftime('%H:%M').values.tolist()
+    times = pd.to_datetime(df["時間"]).drop_duplicates().dt.strftime('%H:%M').values.tolist()
     times.insert(0, times[0])
     return times
 
@@ -100,42 +100,42 @@ times = times(df)
 
 @st.cache(show_spinner=False, max_entries=3, ttl=60)
 def districts_selected(df, districts):
-    df = df[df['district'].isin(districts)]
+    df = df[df['區域'].isin(districts)]
     return df
 
 
 def time_selected(df, time):
-    df = df[df['time'] == dt.strptime(time, '%H:%M').time().strftime("%H:%M:%S")]
+    df = df[df['時間'] == dt.strptime(time, '%H:%M').time().strftime("%H:%M:%S")]
     return df
 
 
-@st.cache(show_spinner=False, suppress_st_warning=True)
+@st.cache(show_spinner=False, suppress_st_warning=True, ttl=60)
 def daily_usage(df):
-    df = df.groupby(pd.Grouper(key='datetime', axis=0, freq='1h')).agg(
-        {'inPerMinute': 'sum', 'outPerMinute': 'sum'}).reset_index()
+    df = df.groupby(pd.Grouper(key='日期時間', axis=0, freq='30Min')).agg(
+        {'歸還數量': 'sum', '借出數量': 'sum'}).reset_index()
     return df
 
 
-@st.cache(show_spinner=False, suppress_st_warning=True)
+@st.cache(show_spinner=False, suppress_st_warning=True, ttl=60)
 def district_usage(df):
-    df = df.groupby("district").agg({'outPerMinute': 'sum', 'inPerMinute': 'sum'}).reset_index()
-    districts = df["district"].tolist()
-    outPerMinute = df["outPerMinute"].tolist()
-    inPerMinute = df["inPerMinute"].tolist()
+    df = df.groupby("區域").agg({'借出數量': 'sum', '歸還數量': 'sum'}).reset_index()
+    districts = df["區域"].tolist()
+    outPerMinute = df["借出數量"].tolist()
+    inPerMinute = df["歸還數量"].tolist()
     return districts, outPerMinute, inPerMinute
 
 
-@st.cache(show_spinner=False, suppress_st_warning=True)
+@st.cache(show_spinner=False, suppress_st_warning=True, ttl=60)
 def daily_district_usage(df):
-    df = df.groupby(['district', pd.Grouper(key='datetime', freq='1h')]).agg(
-        {'outPerMinute': 'sum', 'inPerMinute': 'sum'}).reset_index()
+    df = df.groupby(['區域', pd.Grouper(key='日期時間', freq='30Min')]).agg(
+        {'借出數量': 'sum', '歸還數量': 'sum'}).reset_index()
     return df
 
-@st.cache(show_spinner=False, suppress_st_warning=True)
+@st.cache(show_spinner=False, suppress_st_warning=True, ttl=60)
 def station_number(df):
-    df = df.groupby(['district']).agg({'stationId': 'count'}).reset_index()
-    districts = df['district'].tolist()
-    count = df['stationId'].tolist()
+    df = df.groupby(['區域']).agg({'借用站編號': 'count'}).reset_index()
+    districts = df['區域'].tolist()
+    count = df['借用站編號'].tolist()
     return districts, count
 
 
@@ -146,32 +146,37 @@ select_district = st.sidebar.multiselect(
 
 
 ### Show Date ####
-st.write(show_date(date))
+co1, co2 = st.columns([5,1])
+
+co1.write(show_date(date))
+
+co2.caption(f"更新時間: { get_date() }", unsafe_allow_html=False)
 st.markdown("---")
 
 
 ### Show Data ####
 
 
+
 def show_data(df, current_df, times, time):
     index = times.index(time, 1)
     previous_time = times[index - 1]
 
-    current_return = current_df['inPerMinute'].sum()
-    current_lend = current_df['outPerMinute'].sum()
+    current_return = current_df['歸還數量'].sum()
+    current_lend = current_df['借出數量'].sum()
 
-    pre_df = df[df['time'] == dt.strptime(previous_time, '%H:%M').time().strftime("%H:%M:%S")]
-    pre_return = pre_df['inPerMinute'].sum()
-    pre_lend = pre_df['outPerMinute'].sum()
+    pre_df = df[df['時間'] == dt.strptime(previous_time, '%H:%M').time().strftime("%H:%M:%S")]
+    pre_return = pre_df['歸還數量'].sum()
+    pre_lend = pre_df['借出數量'].sum()
 
     temp, stations_id = get_all_stations(city) #all stations ID
     del temp
 
-    col1.metric(label="借用站數量", value = len(stations_id),
-                delta_color="inverse")
+    # col1.metric(label="借用站數量", value = len(stations_id),
+    #             delta_color="inverse")
 
 
-    col2.metric(label="服務中的借用站數量", value = len(onservice),
+    col1.metric(label="服務中的數量 / 借用站總量", value = f"{ len(onservice) } / { len(stations_id) }",
                 delta_color="off")
 
     if round(float((current_return - pre_return) / current_return), 2) >= 0 and round(float((current_return - pre_return) / current_return), 2) <= 100:
@@ -180,9 +185,7 @@ def show_data(df, current_df, times, time):
         return_result = 0
         pass
 
-    col3.metric(label="歸還數量", value = current_df['inPerMinute'].sum(),
-                delta=f"{ return_result } %",
-                delta_color="normal")
+    col2.metric(label="歸還數量", value = current_df['歸還數量'].sum())
 
     if round(float((current_lend - pre_lend) /  current_lend), 2) >= 0 and round(float((current_lend - pre_lend) /  current_lend), 2) <= 100:
         lend_result = round(float((current_lend - pre_lend) /  current_lend), 2)
@@ -190,24 +193,25 @@ def show_data(df, current_df, times, time):
         lend_result = 0
         pass
 
-    col4.metric(label="借出數量", value = current_df['outPerMinute'].sum(),
-                delta=f"{ lend_result } %",
-                delta_color="normal")
+    col3.metric(label="借出數量", value = current_df['借出數量'].sum())
 
 
-def show_map(df, select_info, available_lots, shortage_duration):
-    data_layout = {"可停數量":"total", "可借車輛":"availableSpace", "可停空位":"emptySpace"}
+def show_map(df, shortage_duration):
 
-    temp_df = df[((df['proportion'] >= available_lots[0]) & (df['proportion'] <= available_lots[1]))]
-    temp_df = temp_df[(temp_df['shortageDuration'] >= shortage_duration[0]) & (temp_df['shortageDuration'] <= shortage_duration[1])]
 
-    fig = px.scatter_mapbox(temp_df, lat="lat", lon="lon", hover_name="name",
-                            hover_data=["emptySpace", "district", "availableSpace"],
-                            color="color", size = data_layout[select_info],
-                            zoom=11, height=680, opacity=.8)
+    temp_df = df[(df['缺車的時間長度'] >= shortage_duration[0]) & (df['缺車的時間長度'] <= shortage_duration[1])]
+
+
+    fig = px.scatter_mapbox(temp_df, lat="緯度", lon="經度", hover_name="借用站名稱",
+                            hover_data=["可借用腳踏車數量", "空位數量", "區域"],
+                            color="腳踏車供應狀況",size="停車位數量", size_max=11,
+                            zoom=11, height=680, opacity=.8,color_discrete_map={'red': '#EF553E',
+                                 'yellow':'#FECB52', 'green':'#2CA02C'})
     fig.update_layout(mapbox_style="carto-positron", autosize=True, margin={"r": 0, "t": 0, "l": 0, "b": 0},hovermode='closest')
 
     col5.plotly_chart(fig, use_container_width=True)
+    col5.caption("* 地圖中的圖示大小，代表的是該借用站的車位數量", unsafe_allow_html=False)
+    col5.text(" \n")
 
 
 def show_temporarily_closed(df):
@@ -225,9 +229,9 @@ def show_temporarily_closed(df):
 
 
 def chart_1(df):
-    col7.markdown('##### 整體縣市每小時的使用狀況')
+    st.markdown(f'##### {city}市每小時的使用狀況')
 
-    fig = px.line(df, x='datetime', y=['inPerMinute', 'outPerMinute'], height=500)
+    fig = px.line(df, x='日期時間', y=['歸還數量', '借出數量'], height=450)
     fig.update_layout(
         xaxis_title="時間(小時)",
         yaxis_title="使用量",
@@ -235,20 +239,30 @@ def chart_1(df):
     )
     fig.update_xaxes(title_text='時間(小時)')
     fig.update_yaxes(title_text='使用量')
-    newnames = {'inPerMinute': "腳踏車歸還 / 小時", 'outPerMinute': "腳踏車借出 / 小時"}
+    newnames = {'歸還數量': "歸還數量", '借出數量': "借出數量"}
     fig.for_each_trace(lambda t: t.update(name=newnames[t.name],
                                           legendgroup=newnames[t.name],
                                           hovertemplate=t.hovertemplate.replace(t.name, newnames[t.name])
                                           )
                        )
-    col7.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True)
+
+def chart_2(df):
+    st.markdown(f'##### {city}市各區每小時的使用狀況')
+    fig = px.line(df, x='日期時間', y=['借出數量'], color="區域", height=450)
+    fig.update_layout(
+        xaxis_title="時間(小時)",
+        yaxis_title="各區域使用量",
+        legend_title=""
+    )
+    st.plotly_chart(fig, use_container_width=True)
 
 
-def chart_2(districts, outPerMinute, inPerMinute):
-    col8.markdown('##### 各市區的使用狀況')
+def chart_3(districts, outPerMinute, inPerMinute):
+    st.markdown(f'##### {city}市各區的使用狀況')
     fig = go.Figure(data=[
-        go.Bar(name='腳踏車歸還 / 區域', x=districts, y=outPerMinute, text=outPerMinute),
-        go.Bar(name='腳踏車借出 / 區域', x=districts, y=inPerMinute, text=inPerMinute)
+        go.Bar(name='歸還數量', x=districts, y=outPerMinute, text=outPerMinute),
+        go.Bar(name='借出數量', x=districts, y=inPerMinute, text=inPerMinute)
     ])
     fig.update_layout(barmode='group',
                       height=500,
@@ -257,83 +271,48 @@ def chart_2(districts, outPerMinute, inPerMinute):
                       yaxis_title="使用量",
                       legend_title=""
                       )
-    col8.plotly_chart(fig, use_container_width=True)
-
-
-def chart_3(df):
-    col9.markdown('##### 各市區每小時的使用狀況')
-    fig = px.line(df, x='datetime', y=['outPerMinute'], color="district", height=500)
-    fig.update_layout(
-        xaxis_title="時間(小時)",
-        yaxis_title="各區域使用量",
-        legend_title=""
-    )
-    col9.plotly_chart(fig, use_container_width=True)
-
-
-def chart_4(districts, count):
-    col10.markdown('##### 各市區的借用站數量')
-    fig = go.Figure(data=[
-        go.Bar(name='腳踏車歸還 / 區域', x=districts, y=count, text=count)
-    ])
-    fig.update_layout(
-        xaxis_title="",
-        yaxis_title="各區域借用站的數量"
-    )
-    fig.update_layout(barmode='group', height=500, xaxis={'categoryorder': 'total ascending'})
-    col10.plotly_chart(fig, use_container_width=True)
-
-def chart_5():
-    pass
+    st.plotly_chart(fig, use_container_width=True)
 
 
 if select_district != []:
-    col1, col2, col3, col4 = st.columns(4) #show show_data function
+    col1, col2, col3 = st.columns(3) #show show_data function
 
     st.text(" \n")
     st.text(" \n")
 
-    col5, col6 = st.columns([4, 1])
+    col5, col6 = st.columns([100, 1])
 
     #### Map Container #####
 
-    select_info = col6.selectbox(
-      '選取資料圖層',
-        ("可停數量", "可借車輛", "可停空位"))
 
 
-    time = col6.select_slider(
+
+
+    time = st.select_slider(
          '選取時間',
          options=times)
-
-
-    available_lots = col6.slider(
-        '可借用車 ( % )',
-        0, 100, (0, 100), step=5, key=1)
 
 
     filter_by_time_df = time_selected(df, time)
     filter_by_district_df = districts_selected(filter_by_time_df, select_district)
 
 
-    shortage_duration = col6.slider(
-        '缺車時間長度',
-        int(filter_by_district_df["shortageDuration"].min()), int(filter_by_district_df["shortageDuration"].max()),
-        (int(filter_by_district_df["shortageDuration"].min()), int(filter_by_district_df["shortageDuration"].max())), step=10, key=3)
 
+
+    shortage_duration = st.slider(
+        '缺車時間長度',
+        int(filter_by_district_df["缺車的時間長度"].min()), int(filter_by_district_df["缺車的時間長度"].max()),
+        (int(filter_by_district_df["缺車的時間長度"].min()), int(filter_by_district_df["缺車的時間長度"].max())), step=10, key=3)
 
     show_data(df, filter_by_time_df, times, time)
-    show_map(filter_by_district_df,select_info, available_lots, shortage_duration)
+    show_map(filter_by_district_df, shortage_duration)
     show_temporarily_closed(df)
 
     st.markdown("---")
-    col7, col8 = st.columns(2)
     chart_1(daily_usage(df))
-    chart_2(district_usage(df)[0], district_usage(df)[1], district_usage(df)[2])
+    chart_2(daily_district_usage(df))
+    chart_3(district_usage(df)[0], district_usage(df)[1], district_usage(df)[2])
 
-    col9, col10 = st.columns(2)
-    chart_3(daily_district_usage(df))
-    chart_4(station_number(filter_by_time_df)[0], station_number(filter_by_time_df)[1])
 
 else:
     st.info('未找到相關資訊。')
