@@ -9,6 +9,7 @@ import os
 import time
 import threading
 import json
+import schedule
 
 load_dotenv()
 
@@ -22,8 +23,8 @@ engine = create_engine(f"mysql+pymysql://{ SQL_USER }:{ SQL_PASSWORD }@{ SQL_HOS
 
 
 def json_converter(data):
-    keys = ['date', 'time', 'datetime', 'stationId', 'name', 'total', 'availableSpace', 'emptySpace', 'outPerMinute',
-            'inPerMinute', 'proportion', 'shortageProportion', 'color', 'shortageDuration', 'lat', 'lon', 'district']
+    keys = ['日期', '時間', '日期時間', '借用站編號', '借用站名稱', '停車位數量', '可借用腳踏車數量', '空位數量', '借出數量', '歸還數量', '腳踏車供應狀況', '缺車的時間長度', '緯度',
+     '經度', '區域']
     json_data = [dict(zip(keys, event)) for event in data]
     return json_data
 
@@ -39,7 +40,7 @@ def get_time():
 def taipei_youbike_etl():
     start_time, end_time, date = get_time()
     start = time.time()
-    query = f"SELECT DATE_FORMAT(EventTaipei.datetime, '%%Y-%%m-%%d') AS date, DATE_FORMAT(EventTaipei.datetime, '%%H:%%i:00') AS time, DATE_FORMAT(EventTaipei.datetime, '%%Y-%%m-%%d %%H:%%i:00') AS datetime, EventTaipei.stationId, YoubikeStation.name, EventTaipei.total, EventTaipei.availableSpace, EventTaipei.emptySpace, EventTaipei.outPerMinute, EventTaipei.inPerMinute, (CAST(EventTaipei.availableSpace / EventTaipei.total * 100 AS UNSIGNED)) AS proportion, (CAST(EventTaipei.emptySpace / EventTaipei.total * 100 AS UNSIGNED)) AS shortageProportion, EventTaipei.color, EventTaipei.shortageDuration, YoubikeStation.lat, YoubikeStation.lon, (District.name) AS district FROM `EventTaipei` INNER JOIN `YoubikeStation` ON `EventTaipei`.stationId = `YoubikeStation`.stationId INNER JOIN `District` ON `YoubikeStation`.districtId = `District`.id WHERE datetime BETWEEN str_to_date('{ start_time }', '%%Y-%%m-%%d') AND str_to_date('{ end_time }', '%%Y-%%m-%%d')"
+    query = f"SELECT DATE_FORMAT(EventTaipei.datetime, '%%Y-%%m-%%d') AS date, DATE_FORMAT(EventTaipei.datetime, '%%H:%%i:00') AS time, DATE_FORMAT(EventTaipei.datetime, '%%Y-%%m-%%d %%H:%%i:00') AS datetime, EventTaipei.stationId, YoubikeStation.name, EventTaipei.total, EventTaipei.availableSpace, EventTaipei.emptySpace, EventTaipei.outPerMinute, EventTaipei.inPerMinute, EventTaipei.color, EventTaipei.shortageDuration, YoubikeStation.lat, YoubikeStation.lon, District.name FROM `EventTaipei` INNER JOIN `YoubikeStation` ON `EventTaipei`.stationId = `YoubikeStation`.stationId INNER JOIN `District` ON `YoubikeStation`.districtId = `District`.id WHERE datetime BETWEEN str_to_date('{ start_time }', '%%Y-%%m-%%d') AND str_to_date('{ end_time }', '%%Y-%%m-%%d')"
     data = get_event_data(query)
     end = time.time()
     query_time = end - start
@@ -68,7 +69,7 @@ def taipei_youbike_etl():
 def taichung_youbike_etl():
     start_time, end_time, date = get_time()
     start = time.time()
-    query = f"SELECT DATE_FORMAT(EventTaichung.datetime, '%%Y-%%m-%%d') AS date, DATE_FORMAT(EventTaichung.datetime, '%%H:%%i:00') AS time, DATE_FORMAT(EventTaichung.datetime, '%%Y-%%m-%%d %%H:%%i:00') AS datetime, EventTaichung.stationId, YoubikeStation.name, EventTaichung.total, EventTaichung.availableSpace, EventTaichung.emptySpace, EventTaichung.outPerMinute, EventTaichung.inPerMinute, (CAST(EventTaichung.availableSpace / EventTaichung.total * 100 AS UNSIGNED)) AS proportion, (CAST(EventTaichung.emptySpace / EventTaichung.total * 100 AS UNSIGNED)) AS shortageProportion, EventTaichung.color, EventTaichung.shortageDuration, YoubikeStation.lat, YoubikeStation.lon, (District.name) AS district FROM `EventTaichung` INNER JOIN `YoubikeStation` ON `EventTaichung`.stationId = `YoubikeStation`.stationId INNER JOIN `District` ON `YoubikeStation`.districtId = `District`.id WHERE datetime BETWEEN str_to_date('{ start_time }', '%%Y-%%m-%%d') AND str_to_date('{ end_time }', '%%Y-%%m-%%d')"
+    query = f"SELECT DATE_FORMAT(EventTaichung.datetime, '%%Y-%%m-%%d') AS date, DATE_FORMAT(EventTaichung.datetime, '%%H:%%i:00') AS time, DATE_FORMAT(EventTaichung.datetime, '%%Y-%%m-%%d %%H:%%i:00') AS datetime, EventTaichung.stationId, YoubikeStation.name, EventTaichung.total, EventTaichung.availableSpace, EventTaichung.emptySpace, EventTaichung.outPerMinute, EventTaichung.inPerMinute, EventTaichung.color, EventTaichung.shortageDuration, YoubikeStation.lat, YoubikeStation.lon, District.name FROM `EventTaichung` INNER JOIN `YoubikeStation` ON `EventTaichung`.stationId = `YoubikeStation`.stationId INNER JOIN `District` ON `YoubikeStation`.districtId = `District`.id WHERE datetime BETWEEN str_to_date('{ start_time }', '%%Y-%%m-%%d') AND str_to_date('{ end_time }', '%%Y-%%m-%%d')"
     data = get_event_data(query)
     end = time.time()
     query_time = end - start
@@ -95,11 +96,8 @@ def taichung_youbike_etl():
     return True
 
 
-
 if __name__ == '__main__':
-
-    while True:
-
+    def job():
         thread_1 = threading.Thread(target=taipei_youbike_etl)
         thread_2 = threading.Thread(target=taichung_youbike_etl)
 
@@ -109,3 +107,9 @@ if __name__ == '__main__':
         thread_1.join()
         thread_2.join()
 
+
+    schedule.every(3).minutes.do(job)
+
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
