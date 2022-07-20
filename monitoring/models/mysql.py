@@ -37,5 +37,5 @@ def get_date():
     result = engine.execute(query)
     date = result.fetchall()
     result.close()
-    return date[0][0].date()
+    return date[0][0]
 
