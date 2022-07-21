@@ -22,6 +22,7 @@ def crawler_logs(date, city):
     df = pd.read_sql_query(query, engine)
     return df
 
+
 def mysql_logs(date, city):
     current_time = date
     dt = datetime.datetime.strptime(date, "%Y-%m-%d")
@@ -29,6 +30,7 @@ def mysql_logs(date, city):
     query = f"SELECT datetime AS `Datetime`, query_time AS `Querying Time (s)`, convert_time AS `Transforming Time (s)`, insert_time AS `Insert Time (s)`FROM mysql_data_processed WHERE `datetime` BETWEEN str_to_date('{ current_time }' , '%%Y-%%m-%%d') AND str_to_date('{ next_time }', '%%Y-%%m-%%d') AND `data_source` = '{ city }'"
     df = pd.read_sql_query(query, engine)
     return df
+
 
 def get_date():
     query = f"SELECT datetime FROM mysql_data_processed ORDER BY id DESC LIMIT 1"

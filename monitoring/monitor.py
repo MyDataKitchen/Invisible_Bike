@@ -52,7 +52,6 @@ def main():
             {'Querying Time (s)': 'max', 'Transforming Time (s)': 'max', 'Insert Time (s)': 'max'}).reset_index()
         return df
 
-
     @st.experimental_memo(show_spinner=False, ttl=60)
     def check_duplicate_data(date, city):
         df = crawler_logs(date.strftime("%Y-%m-%d"), city)
@@ -194,7 +193,6 @@ def main():
         fig = px.pie(df, values='Status', names=df.index,
                      title='台北 YOUBIKE 重複資料的比例', color=df.index, color_discrete_map={'Available Data': '#636EFA',
                                      'Duplicate':'#EF553B'})
-
         fig.update_traces(textposition='inside', textinfo='percent+label')
         col1.plotly_chart(fig, use_container_width=True)
 
@@ -204,7 +202,6 @@ def main():
         fig = px.pie(df, values='Status', names=df.index,
                      title='台中 YOUBIKE 重複資料的比例', color=df.index, color_discrete_map={'Available Data': '#FF7F0E',
                                      'Duplicate':'#2CA02C'})
-
         fig.update_traces(textposition='inside', textinfo='percent+label')
         col2.plotly_chart(fig, use_container_width=True)
 
