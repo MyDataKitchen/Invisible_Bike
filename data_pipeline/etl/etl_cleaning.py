@@ -1,5 +1,5 @@
 from data_pipeline.models.mysql import insert_data_to_record, get_data_processed_record
-from data_pipeline.models.mongodb import get_temp_data, insert_temp_data, delete_data, insert_log
+from data_pipeline.models.mongo import get_temp_data, insert_temp_data, delete_data, insert_log
 from sqlalchemy import create_engine
 from pymongo import MongoClient
 from dotenv import load_dotenv
@@ -248,7 +248,7 @@ def taichung_youbike_etl():
 
 
 if __name__ == '__main__':
-    subprocess.run(["python3", "s3_temp_to_mongo.py"])
+    subprocess.run(["python3", "backup_system.py"])
 
     thread_1 = threading.Thread(target=taipei_youbike_etl)
     thread_2 = threading.Thread(target=taichung_youbike_etl)

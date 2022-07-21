@@ -1,5 +1,5 @@
 from data_pipeline.models.s3 import get_s3_temp_filenames, get_data_from_s3, move_temp_file
-from data_pipeline.models.mongodb import insert_s3_temp_to_mongo
+from data_pipeline.models.mongo import insert_s3_temp_to_mongo
 import os
 import threading
 

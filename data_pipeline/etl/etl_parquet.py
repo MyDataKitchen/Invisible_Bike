@@ -28,6 +28,7 @@ def json_converter(data):
     json_data = [dict(zip(keys, event)) for event in data]
     return json_data
 
+
 def get_time():
     dt1 = datetime.utcnow().replace(tzinfo=timezone.utc).astimezone(timezone(timedelta(hours=8)))
     dt2 = (datetime.utcnow()+dt.timedelta(days=1)).replace(tzinfo=timezone.utc).astimezone(timezone(timedelta(hours=8)))
