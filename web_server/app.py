@@ -3,8 +3,6 @@ import os
 os.environ["MODIN_ENGINE"] = "ray"
 from models.s3 import get_parquet, get_dates_s3
 from models.mysql import get_all_stations, get_date
-from dotenv import load_dotenv
-from sqlalchemy import create_engine
 from datetime import datetime as dt
 import streamlit as st
 import plotly.express as px
@@ -15,16 +13,6 @@ import plotly.graph_objects as go
 from PIL import Image
 import sys
 from streamlit import cli as stcli
-
-load_dotenv()
-
-SQL_HOST = os.getenv('MYSQL_HOST')
-SQL_USER = os.getenv('MYSQL_USER')
-SQL_PASSWORD = os.getenv('MYSQL_PASSWORD')
-SQL_DATABASE = os.getenv('MYSQL_DATABASE')
-
-engine = create_engine(f"mysql+pymysql://{ SQL_USER }:{ SQL_PASSWORD }@{ SQL_HOST }/{ SQL_DATABASE }",
-                       pool_size=20, max_overflow=5, pool_pre_ping=True)
 
 
 @st.experimental_memo(show_spinner=False, ttl=60)
@@ -212,6 +200,7 @@ def main():
                                                   )
                                )
             st.plotly_chart(fig, use_container_width=True)
+
 
         def chart_2(df):
             st.markdown(f'##### {city}市各區每小時的使用狀況')
