@@ -27,6 +27,98 @@ engine = create_engine(f"mysql+pymysql://{ SQL_USER }:{ SQL_PASSWORD }@{ SQL_HOS
                        pool_size=20, max_overflow=5, pool_pre_ping=True)
 
 
+@st.experimental_memo(show_spinner=False, ttl=60)
+def get_date_mysql():
+    return get_date()
+
+
+def show_date(date):
+    days = {"Sunday": "星期天", "Monday": "星期一", "Tuesday": "星期二", "Wednesday": "星期三", "Thursday": "星期四", "Friday": "星期五",
+            "Saturday": "星期六"}
+    day = datetime.datetime.strptime(str(date), '%Y-%m-%d').strftime('%A')
+    result = f"### { date } &nbsp;: &nbsp;{ days[day] }"
+    return result
+
+
+def select_city(city):
+    citys = {'台北': 'taipei', '台中': 'taichung'}
+    return citys[city]
+
+
+@st.experimental_memo(show_spinner=False, ttl=600)
+def load_parquet(city, date):
+    df = get_parquet(f"parquet/{ city }/{ date }_{ city }.parquet")
+    df['日期時間'] = pd.to_datetime(df['日期時間'])
+    return df
+
+
+@st.experimental_memo(show_spinner=False, ttl=60)
+def load_all_stations(city):
+    df, stations_id = get_all_stations(city)
+    return df, stations_id
+
+
+@st.experimental_memo(show_spinner=False, ttl=60)
+def get_districts(df):
+    districts = df[['區域']].drop_duplicates()['區域'].tolist() #get unique districts from dataframe
+    return districts
+
+
+@st.experimental_memo(show_spinner=False, ttl=60)
+def get_onservice_stations(df):
+    stations = df['借用站編號'].drop_duplicates().tolist()
+    return stations
+
+
+@st.experimental_memo(show_spinner=False, ttl=60)
+def get_times(df):
+    times = pd.to_datetime(df["時間"]).drop_duplicates().dt.strftime('%H:%M').values.tolist()
+    times.insert(0, times[0])
+    return times
+
+
+@st.cache(show_spinner=False, max_entries=3, ttl=60)
+def districts_selected(df, districts):
+    df = df[df['區域'].isin(districts)]
+    return df
+
+
+def time_selected(df, time):
+    df = df[df['時間'] == dt.strptime(time, '%H:%M').time().strftime("%H:%M:%S")]
+    return df
+
+
+@st.cache(show_spinner=False, suppress_st_warning=True, ttl=60)
+def daily_usage(df):
+    df = df.groupby(pd.Grouper(key='日期時間', axis=0, freq='30Min')).agg(
+        {'歸還數量': 'sum', '借出數量': 'sum'}).reset_index()
+    return df
+
+
+@st.cache(show_spinner=False, suppress_st_warning=True, ttl=60)
+def district_usage(df):
+    df = df.groupby("區域").agg({'借出數量': 'sum', '歸還數量': 'sum'}).reset_index()
+    districts = df["區域"].tolist()
+    outPerMinute = df["借出數量"].tolist()
+    inPerMinute = df["歸還數量"].tolist()
+    return districts, outPerMinute, inPerMinute
+
+
+@st.cache(show_spinner=False, suppress_st_warning=True, ttl=60)
+def daily_district_usage(df):
+    df = df.groupby(['區域', pd.Grouper(key='日期時間', freq='30Min')]).agg(
+        {'借出數量': 'sum', '歸還數量': 'sum'}).reset_index()
+    return df
+
+
+@st.cache(show_spinner=False, suppress_st_warning=True, ttl=60)
+def station_number(df):
+    df = df.groupby(['區域']).agg({'借用站編號': 'count'}).reset_index()
+    districts = df['區域'].tolist()
+    count = df['借用站編號'].tolist()
+    return districts, count
+
+
 def main():
     favicon = Image.open("static/favicon.ico")
     st.set_page_config(
@@ -43,23 +135,6 @@ def main():
       '選取縣市',
       ['台北', '台中'])
 
-    @st.experimental_memo(show_spinner=False, ttl=60)
-    def get_date_mysql():
-        return get_date()
-
-
-    def show_date(date):
-        days = {"Sunday": "星期天", "Monday": "星期一", "Tuesday": "星期二", "Wednesday": "星期三", "Thursday": "星期四", "Friday": "星期五",
-                "Saturday": "星期六"}
-        day = datetime.datetime.strptime(str(date), '%Y-%m-%d').strftime('%A')
-        result = f"### { date } &nbsp;: &nbsp;{ days[day] }"
-        return result
-
-
-    def select_city(city):
-        citys = {'台北': 'taipei', '台中': 'taichung'}
-        return citys[city]
-
     dates = get_dates_s3(f"parquet/{ select_city(city) }/")
 
     date = st.sidebar.date_input(
@@ -68,84 +143,14 @@ def main():
 
 
     if str(date) in dates:
-        @st.experimental_memo(show_spinner=False, ttl=600)
-        def load_parquet(city, date):
-            df = get_parquet(f"parquet/{ city }/{ date }_{ city }.parquet")
-            df['日期時間'] = pd.to_datetime(df['日期時間'])
-            return df
 
         df = load_parquet(select_city(city), date)
 
-
-        @st.experimental_memo(show_spinner=False, ttl=60)
-        def load_all_stations(city):
-            df, stations_id = get_all_stations(city)
-            return df, stations_id
-
         station_df, stations_id = load_all_stations(city)
-
-
-        @st.experimental_memo(show_spinner=False, ttl=60)
-        def get_districts(df):
-            districts = df[['區域']].drop_duplicates()['區域'].tolist() #get unique districts from dataframe
-            return districts
-
-
-        @st.experimental_memo(show_spinner=False, ttl=60)
-        def get_onservice_stations(df):
-            stations = df['借用站編號'].drop_duplicates().tolist()
-            return stations
 
         onservice = get_onservice_stations(df)
 
-        @st.experimental_memo(show_spinner=False, ttl=60)
-        def times(df):
-            times = pd.to_datetime(df["時間"]).drop_duplicates().dt.strftime('%H:%M').values.tolist()
-            times.insert(0, times[0])
-            return times
-
-        times = times(df)
-
-        @st.cache(show_spinner=False, max_entries=3, ttl=60)
-        def districts_selected(df, districts):
-            df = df[df['區域'].isin(districts)]
-            return df
-
-
-        def time_selected(df, time):
-            df = df[df['時間'] == dt.strptime(time, '%H:%M').time().strftime("%H:%M:%S")]
-            return df
-
-
-        @st.cache(show_spinner=False, suppress_st_warning=True, ttl=60)
-        def daily_usage(df):
-            df = df.groupby(pd.Grouper(key='日期時間', axis=0, freq='30Min')).agg(
-                {'歸還數量': 'sum', '借出數量': 'sum'}).reset_index()
-            return df
-
-
-        @st.cache(show_spinner=False, suppress_st_warning=True, ttl=60)
-        def district_usage(df):
-            df = df.groupby("區域").agg({'借出數量': 'sum', '歸還數量': 'sum'}).reset_index()
-            districts = df["區域"].tolist()
-            outPerMinute = df["借出數量"].tolist()
-            inPerMinute = df["歸還數量"].tolist()
-            return districts, outPerMinute, inPerMinute
-
-
-        @st.cache(show_spinner=False, suppress_st_warning=True, ttl=60)
-        def daily_district_usage(df):
-            df = df.groupby(['區域', pd.Grouper(key='日期時間', freq='30Min')]).agg(
-                {'借出數量': 'sum', '歸還數量': 'sum'}).reset_index()
-            return df
-
-        @st.cache(show_spinner=False, suppress_st_warning=True, ttl=60)
-        def station_number(df):
-            df = df.groupby(['區域']).agg({'借用站編號': 'count'}).reset_index()
-            districts = df['區域'].tolist()
-            count = df['借用站編號'].tolist()
-            return districts, count
-
+        times = get_times(df)
 
         select_district = st.sidebar.multiselect(
           '選取區域',
