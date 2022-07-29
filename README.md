@@ -15,7 +15,8 @@ Monitoring dashboard URL: https://invisible-bikes.com/dashboard/ <br />
 * [Features](#Features)
 * [Technologies](#Technologies)
 
-## Data Pipeline
+## Data Pipeline & Architecture
+Separated crawler, data pipeline, and web server into different microservice to increase availability.
 
 ![Untitled Diagram (11)](https://user-images.githubusercontent.com/88612132/181450500-114e2169-30fd-402c-bae7-13ae170712af.png)
 
