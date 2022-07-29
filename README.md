@@ -9,12 +9,13 @@ Monitoring dashboard URL: https://invisible-bikes.com/dashboard/ <br />
 ![Screenshot 2022-07-28 at 3 42 55 PM](https://user-images.githubusercontent.com/88612132/181449880-f90c7cc1-6df4-4484-9479-bdae4af5d1a2.png)
 
 ## Table of Contents
-* [Data Pipeline & Architecture](#Data-Pipeline-&-Architecture)
+* [Data Pipeline](#Data-Pipeline)
 * [MySQL Schema](#MySQL-Schema)
 * [Technologies](#Technologies)
 * [Features](#Features)
 
-## Data Pipeline & Architecture
+
+## Data Pipeline
 Separated crawler, data pipeline, and web server into different microservice to increase availability.
 
 ![Untitled Diagram (11)](https://user-images.githubusercontent.com/88612132/181450500-114e2169-30fd-402c-bae7-13ae170712af.png)
