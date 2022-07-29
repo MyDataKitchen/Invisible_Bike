@@ -12,7 +12,7 @@ Monitoring dashboard URL: https://invisible-bikes.com/dashboard/ <br />
 * [Data Pipeline & Architecture](#Data-Pipeline&Architecture)
 * [MySQL Schema](#MySQL-Schema)
 * [Technologies](#Technologies)
-* * [Features](#Features)
+* [Features](#Features)
 
 ## Data Pipeline & Architecture
 Separated crawler, data pipeline, and web server into different microservice to increase availability.
