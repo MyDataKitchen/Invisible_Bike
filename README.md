@@ -29,46 +29,49 @@ Monitoring dashboard URL: https://invisible-bikes.com/dashboard/ <br />
 - Modin
 - Ray
 
-### Dashboard
+#### Dashboard
 - Streamlit
 - Plotly
 - Mapbox
 
-### Data pipeline
+#### Data pipeline
 - Pandas
 - Python Schedule
 
-### Database
+#### Database
 - MySQL
 - MongoDB
 
-### Cloud Service (AWS)
+#### Cloud Service (AWS)
 - EC2
 - RDS
 - S3
 
-### Cloud Service (GCP)
+#### Cloud Service (GCP)
 - Compute Engine
 
-### Third Party APIs
-- DATA.GOV.TW
-
-### Networking
+#### Networking
 - HTTPS
 - SSL
 - Domain Name System (DNS)
 - Nginx
 
-### Test
+#### Test
 - pytest
 
-### Others
+#### Others
 - Version Control: Git & GitHub
 - Scrum: Trello
 - Linter: pylint
 
-### Data Source
+#### Data Source
 - [DATA.GOV.TW](https://data.gov.tw/)
+
+## Features
+#### Youbike Stations Monitoring Dashborad
+![](https://user-images.githubusercontent.com/88612132/181695915-d33a4cb6-42a3-4f8a-857d-d3eb951a4996.gif)
+
+#### Data Pipeline Dashboard
 
 ## Contact
 Alfred Loh @ jiayong0226@gmail.com
