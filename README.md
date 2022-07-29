@@ -72,6 +72,7 @@ Monitoring dashboard URL: https://invisible-bikes.com/dashboard/ <br />
 ![](https://user-images.githubusercontent.com/88612132/181695915-d33a4cb6-42a3-4f8a-857d-d3eb951a4996.gif)
 
 #### Data Pipeline Dashboard
+![](https://user-images.githubusercontent.com/88612132/181697237-bfcec2ce-7419-4440-bc28-77cb69fc823c.gif)
 
 ## Contact
 Alfred Loh @ jiayong0226@gmail.com
