@@ -25,7 +25,7 @@ Monitoring dashboard URL: https://invisible-bikes.com/dashboard/ <br />
 
 ## Technologies
 
-### Parallel Processing
+#### Parallel Processing
 - Modin
 - Ray
 
