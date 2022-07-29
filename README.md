@@ -9,7 +9,7 @@ Monitoring dashboard URL: https://invisible-bikes.com/dashboard/ <br />
 ![Screenshot 2022-07-28 at 3 42 55 PM](https://user-images.githubusercontent.com/88612132/181449880-f90c7cc1-6df4-4484-9479-bdae4af5d1a2.png)
 
 ## Table of Contents
-* [Data Pipeline & Architecture](#Data-Pipeline&Architecture)
+* [Data Pipeline & Architecture](#Data-Pipeline-&-Architecture)
 * [MySQL Schema](#MySQL-Schema)
 * [Technologies](#Technologies)
 * [Features](#Features)
