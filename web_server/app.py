@@ -65,7 +65,7 @@ def get_times(df):
     return times
 
 
-@st.cache(show_spinner=False, max_entries=3, ttl=60)
+@st.experimental_memo(show_spinner=False, ttl=60)
 def districts_selected(df, districts):
     df = df[df['區域'].isin(districts)]
     return df
@@ -76,14 +76,14 @@ def time_selected(df, time):
     return df
 
 
-@st.cache(show_spinner=False, suppress_st_warning=True, ttl=60)
+@st.experimental_memo(show_spinner=False, ttl=60)
 def daily_usage(df):
     df = df.groupby(pd.Grouper(key='日期時間', axis=0, freq='30Min')).agg(
         {'歸還數量': 'sum', '借出數量': 'sum'}).reset_index()
     return df
 
 
-@st.cache(show_spinner=False, suppress_st_warning=True, ttl=60)
+@st.experimental_memo(show_spinner=False, ttl=60)
 def district_usage(df):
     df = df.groupby("區域").agg({'借出數量': 'sum', '歸還數量': 'sum'}).reset_index()
     districts = df["區域"].tolist()
@@ -92,14 +92,14 @@ def district_usage(df):
     return districts, outPerMinute, inPerMinute
 
 
-@st.cache(show_spinner=False, suppress_st_warning=True, ttl=60)
+@st.experimental_memo(show_spinner=False, ttl=60)
 def daily_district_usage(df):
     df = df.groupby(['區域', pd.Grouper(key='日期時間', freq='30Min')]).agg(
         {'借出數量': 'sum', '歸還數量': 'sum'}).reset_index()
     return df
 
 
-@st.cache(show_spinner=False, suppress_st_warning=True, ttl=60)
+@st.experimental_memo(show_spinner=False, ttl=60)
 def station_number(df):
     df = df.groupby(['區域']).agg({'借用站編號': 'count'}).reset_index()
     districts = df['區域'].tolist()
